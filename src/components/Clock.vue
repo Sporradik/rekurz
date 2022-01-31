@@ -14,12 +14,14 @@ export default {
 	name: 'AnalogClock',
 	computed: {
 		recursion() {
+      return 10
 			// return parseInt(customization.analogClockRecursion) - 1
 		},
 		lightness() {
+      return 80
 			// return parseInt(customization.analogClockLightness)
 		},
-		hueShift() {
+		hueShift() { return 0
 			// return parseInt(customization.analogClockHueShift)
 		}
 	},
@@ -36,12 +38,15 @@ export default {
 		const $this = this
 		const container = this.$refs['canvas-container']
 		const root = this.$refs['analog-clock']
-		const handLength = 140
+		const handLength = 200
 		this.sketch = Sketch.create({
 			container,
 			height: container.clientHeight,
 			width: container.clientWidth,
 			autopause: false,
+      resize() {
+        this.setup()
+      },
 			setup() {
 				this.center = this.getCenterPointXY()
 				this.hands = {
@@ -61,31 +66,33 @@ export default {
 			draw() {
 				const drawNextLine = (parent, depth = 0) => {
 					['second', 'minute'].forEach(name => {
-						const hand = {
+						const line = {
 							x0: parent.x1,
 							y0: parent.y1,
 							x1: 0,
 							y1: 0,
 							rad: parent.rad + this.hands[name].rad,
 							length: (parent.length || handLength) * this.getLengthReductionFactor(),
-							a: 1 - (depth * (1 / $this.recursion)),
+							a: (1 - (depth * (1 / $this.recursion))) - (depth ? 0.05 : 0) ,
 							l: depth ? $this.lightness : 100 - (100 - $this.lightness) / 2,
-							h: (depth * (360 / $this.recursion) + $this.hueShift) % 360
+							h: (depth * (360 / $this.recursion) + $this.hueShift) % 360,
+              depth
 						}
-						Object.assign(hand, this.getEndPointXY(hand))
-						this.drawLineSegment(hand)
-						if (depth < $this.recursion) drawNextLine(hand, depth + 1)
+						Object.assign(line, this.getEndPointXY(line))
+						this.drawLineSegment(line)
+						if (depth < $this.recursion) drawNextLine(line, depth + 1)
 					})
 				}
 
-				Object.entries(this.hands).forEach(([name, data]) => {
+				Object.values(this.hands).forEach(data => {
 					data.rad = this.getRootRad(data.interval)
 					Object.assign(data, this.getEndPointXY(data, true))
 					this.drawLineSegment(data)
 					if (!data.noChildren && $this.recursion) drawNextLine(data)
 				})
 			},
-			drawLineSegment({x0, y0, x1, y1, h = 0, l = 100, a = 1,}) {
+			drawLineSegment({x0, y0, x1, y1, h = 0, l = 100, a = 1, depth}) {
+        this.globalCompositeOperation = depth ? 'destination-under' : 'destination-over'
 				this.beginPath()
 				this.moveTo(x0, y0)
 				this.lineTo(x1, y1)
@@ -126,6 +133,6 @@ export default {
 
 
 <style scoped>
-	.analog-clock { height: 400px; width: 400px; }
-	.canvas-container { position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: -1; }
+	.analog-clock { height: 100%; width: 100%; }
+	.canvas-container { position: fixed; top: 0; right: 0; bottom: 0; left: 0; }
 </style>
