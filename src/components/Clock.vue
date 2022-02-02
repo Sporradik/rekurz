@@ -7,7 +7,24 @@
 
 <script>
 import Sketch from 'sketch-js'
-let t
+let t = getRandomInt(100000000)
+let hueShift = 300
+
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
+function round(number, decimals) {
+    const pow = Math.pow(10, decimals)
+    return Math.round(number * pow) / pow
+}
+
+const lerp = (x, y, a) => x * (1 - a) + y * a;
+const clamp = (a, min = 0, max = 1) => Math.min(max, Math.max(min, a));
+const invlerp = (x, y, a) => clamp((a - x) / (y - x));
+const range = (x1, y1, x2, y2, a) => lerp(x2, y2, invlerp(x1, y1, a));
+
 
 export default {
     name: 'AnalogClock',
@@ -20,10 +37,6 @@ export default {
             return 80
             // return parseInt(customization.analogClockLightness)
         },
-        hueShift() {
-            return 300
-            // return parseInt(customization.analogClockHueShift)
-        }
     },
     props: {
         analyzer: { type: Object, default: null }
@@ -48,11 +61,12 @@ export default {
                 this.setup()
             },
             setup() {
+                this.velocity = 1
                 this.center = this.getCenterPointXY()
                 this.hands = {
                     hour: {interval: 12 * 60 * 60 * 1000, length: 100, noChildren: true},
-                    minute: {interval: 60 * 60 * 1000},
-                    second: {interval: 60 * 1000}
+                    minute: {interval: 40 * 60 * 1000 },
+                    second: {interval: 40 * 1000 }
                 }
                 Object.values(this.hands).forEach(hand => {
                     Object.assign(hand, {
@@ -65,23 +79,26 @@ export default {
                 })
             },
             draw() {
+                t = Math.round(t + this.velocity)
+                // hueShift = Math.round((hueShift + 0.1) * 100) / 100
+                // if (hueShift > 360) hueShift = 0
                 let freqData, stepSize
                 if ($this.analyzer) {
                     freqData = Array.from(this.getByteFrequencyData())
                     stepSize = Math.floor(freqData.length / $this.recursion)
                     // if (!(t % 10)) console.log(freqData)
+                    this.adjustVelocity(freqData)
                 }
-
                 const drawNextLine = (parent, depth = 0) => {
                     let opacityMod = 0
                     if (freqData) {
+                        const compensation = (10 - depth)
                         const start = Math.floor(depth * stepSize)
                         const end = Math.floor(((depth + 1) * stepSize) - 1)
                         const chunk = freqData.slice(start, end)
                         const average = chunk.reduce((acc, val) => acc + val, 0) / stepSize
-                        opacityMod = Math.floor(( ((average / 255))) * 100) / 100
+                        opacityMod = Math.floor(( ((average / 255) / compensation) + 0.005) * 100) / 100
                         // if (!(t % 1000)) console.log('depth', depth, 'start', start, 'end', end, 'chunk', chunk, 'average', average, 'stepSize', stepSize)
-                        t++
                     }
                     ;['second', 'minute'].forEach(name => {
                         const line = {
@@ -93,7 +110,7 @@ export default {
                             length: (parent.length || handLength) * this.getLengthReductionFactor(),
                             a: /*(1 - ((depth * (1 / $this.recursion))) - (depth ? 0.05 : 0)) **/ opacityMod,
                             l: depth ? $this.lightness : 100 - (100 - $this.lightness) / 2,
-                            h: (depth * (360 / $this.recursion) + $this.hueShift) % 360,
+                            h: (depth * (360 / $this.recursion) + Math.floor(hueShift)) % 360,
                             depth
                         }
                         Object.assign(line, this.getEndPointXY(line))
@@ -105,7 +122,7 @@ export default {
                 Object.values(this.hands).forEach(data => {
                     data.rad = this.getRootRad(data.interval)
                     Object.assign(data, this.getEndPointXY(data, true))
-                    this.drawLineSegment(data)
+                    // this.drawLineSegment(data)
                     if (!data.noChildren && $this.recursion) drawNextLine(data)
                 })
             },
@@ -127,11 +144,7 @@ export default {
                 return {x: rect.left + rect.width / 2, y: rect.top + rect.height / 2}
             },
             getRootRad(interval) {
-                let startTime = new Date()
-                startTime.setHours(0, 0, 0, 0)
-                startTime = startTime.getTime()
-                const time = Date.now() - startTime
-                const progress = (time / interval) % 1
+                const progress = (t / interval) % 1
                 const deg = progress * 360
                 return (deg * Math.PI) / 180
             },
@@ -150,6 +163,21 @@ export default {
                 const dataArray = new Uint8Array(bufferLength)
                 analyzer.getByteFrequencyData(dataArray)
                 return dataArray
+            },
+            adjustVelocity(freqData) {
+                // need interpolation
+                const sensitivity = 500
+                const length = 3
+                const chunk = freqData.slice(0, length - 1)
+                const average = chunk.reduce((acc, val) => acc + val, 0) / length
+                let velocity = round((average - 20) / 100, 2)
+                if (velocity > 1) velocity = velocity + ((velocity - 1) * sensitivity) + 1
+                else velocity = 1
+                velocity = round(velocity, 2)
+
+                if (velocity > this.velocity) this.velocity = lerp(velocity, this.velocity, 0.2)
+                else this.velocity = lerp(velocity, this.velocity, 0.95)
+                console.log(velocity)
             }
         })
     },
