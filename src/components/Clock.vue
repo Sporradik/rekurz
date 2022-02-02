@@ -21,9 +21,6 @@ function round(number, decimals) {
 }
 
 const lerp = (x, y, a) => x * (1 - a) + y * a;
-const clamp = (a, min = 0, max = 1) => Math.min(max, Math.max(min, a));
-const invlerp = (x, y, a) => clamp((a - x) / (y - x));
-const range = (x1, y1, x2, y2, a) => lerp(x2, y2, invlerp(x1, y1, a));
 
 
 export default {
@@ -40,11 +37,6 @@ export default {
     },
     props: {
         analyzer: { type: Object, default: null }
-    },
-    watch: {
-        analyzer(val) {
-          console.log('val', val)
-        },
     },
     mounted() {
         const $this = this
@@ -82,23 +74,32 @@ export default {
                 t = Math.round(t + this.velocity)
                 // hueShift = Math.round((hueShift + 0.1) * 100) / 100
                 // if (hueShift > 360) hueShift = 0
-                let freqData, stepSize
+                let freqData, stepSize, lowFreqIntensity
                 if ($this.analyzer) {
                     freqData = Array.from(this.getByteFrequencyData())
                     stepSize = Math.floor(freqData.length / $this.recursion)
                     // if (!(t % 10)) console.log(freqData)
-                    this.adjustVelocity(freqData)
+                    lowFreqIntensity = this.getLowFreqIntensity(freqData)
+                    if (lowFreqIntensity > this.velocity) this.velocity = round(lerp(lowFreqIntensity, this.velocity, 0.2), 2)
+                    else this.velocity = round(lerp(lowFreqIntensity, this.velocity, 0.95), 2)
                 }
                 const drawNextLine = (parent, depth = 0) => {
                     let opacityMod = 0
                     if (freqData) {
-                        const compensation = (10 - depth)
-                        const start = Math.floor(depth * stepSize)
-                        const end = Math.floor(((depth + 1) * stepSize) - 1)
-                        const chunk = freqData.slice(start, end)
-                        const average = chunk.reduce((acc, val) => acc + val, 0) / stepSize
-                        opacityMod = Math.floor(( ((average / 255) / compensation) + 0.005) * 100) / 100
-                        // if (!(t % 1000)) console.log('depth', depth, 'start', start, 'end', end, 'chunk', chunk, 'average', average, 'stepSize', stepSize)
+                        const minHighFreqOpacity = 0.01
+                        const highFreqReductionFactor = 0.02
+                        const lowFreqDampening = 300
+                        if (depth < 4) {
+                            // treat low frequencies differently as they seem to be less sensitive
+                            opacityMod = round(lowFreqIntensity / lowFreqDampening, 2)
+                        } else {
+                            const start = Math.floor(depth * stepSize)
+                            const end = Math.floor(((depth + 1) * stepSize) - 1)
+                            const chunk = freqData.slice(start, end)
+                            const average = chunk.reduce((acc, val) => acc + val, 0) / stepSize
+                            opacityMod = round((((average / 255) - highFreqReductionFactor * depth ) + minHighFreqOpacity), 2)
+                            // if (!(t % 1000)) console.log('depth', depth, 'start', start, 'end', end, 'chunk', chunk, 'average', average, 'stepSize', stepSize)
+                        }
                     }
                     ;['second', 'minute'].forEach(name => {
                         const line = {
@@ -164,20 +165,17 @@ export default {
                 analyzer.getByteFrequencyData(dataArray)
                 return dataArray
             },
-            adjustVelocity(freqData) {
+            getLowFreqIntensity(freqData) {
                 // need interpolation
                 const sensitivity = 500
-                const length = 3
-                const chunk = freqData.slice(0, length - 1)
-                const average = chunk.reduce((acc, val) => acc + val, 0) / length
+                const length = Math.floor(freqData.length / 10)
+                const slice = freqData.slice(0, length - 1)
+                const average = slice.reduce((acc, val) => acc + val, 0) / length
                 let velocity = round((average - 20) / 100, 2)
                 if (velocity > 1) velocity = velocity + ((velocity - 1) * sensitivity) + 1
                 else velocity = 1
-                velocity = round(velocity, 2)
-
-                if (velocity > this.velocity) this.velocity = lerp(velocity, this.velocity, 0.2)
-                else this.velocity = lerp(velocity, this.velocity, 0.95)
-                console.log(velocity)
+                // speed up fast, slow down slow
+                return velocity
             }
         })
     },
