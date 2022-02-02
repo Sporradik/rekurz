@@ -1,7 +1,7 @@
 <template>
-    <div ref="analog-clock" class="analog-clock">
-        <div ref="canvas-container" class="canvas-container"/>
-    </div>
+	<div ref="analog-clock" class="analog-clock">
+		<div ref="canvas-container" class="canvas-container" />
+	</div>
 </template>
 
 
@@ -24,7 +24,10 @@ const lerp = (x, y, a) => x * (1 - a) + y * a;
 
 
 export default {
-    name: 'AnalogClock',
+    name: 'Visualization',
+    props: {
+        analyzer: { type: Object, default: null }
+    },
     computed: {
         recursion() {
             return 10
@@ -35,8 +38,10 @@ export default {
             // return parseInt(customization.analogClockLightness)
         },
     },
-    props: {
-        analyzer: { type: Object, default: null }
+    watch: {
+        analyzer(val) {
+            if (val) this.sketch.start()
+        }
     },
     mounted() {
         const $this = this
@@ -49,6 +54,7 @@ export default {
             width: container.clientWidth,
             // interval: 100,
             autopause: false,
+            autostart: false,
             resize() {
                 this.setup()
             },
@@ -71,36 +77,21 @@ export default {
                 })
             },
             draw() {
+                // get stream frequency data
+                const freqData = Array.from(this.getByteFrequencyData())
+                const stepSize = Math.floor(freqData.length / $this.recursion)
+
+                // shift values
                 t = Math.round(t + this.velocity)
+                this.lowFreqIntensity = this.getLowFreqIntensity(freqData)
                 // hueShift = Math.round((hueShift + 0.1) * 100) / 100
                 // if (hueShift > 360) hueShift = 0
-                let freqData, stepSize, lowFreqIntensity
-                if ($this.analyzer) {
-                    freqData = Array.from(this.getByteFrequencyData())
-                    stepSize = Math.floor(freqData.length / $this.recursion)
-                    // if (!(t % 10)) console.log(freqData)
-                    lowFreqIntensity = this.getLowFreqIntensity(freqData)
-                    if (lowFreqIntensity > this.velocity) this.velocity = round(lerp(lowFreqIntensity, this.velocity, 0.2), 2)
-                    else this.velocity = round(lerp(lowFreqIntensity, this.velocity, 0.95), 2)
-                }
+
+                if (this.lowFreqIntensity > this.velocity) this.velocity = round(lerp(this.lowFreqIntensity, this.velocity, 0.2), 2)
+                else this.velocity = round(lerp(this.lowFreqIntensity, this.velocity, 0.95), 2)
+
+
                 const drawNextLine = (parent, depth = 0) => {
-                    let opacityMod = 0
-                    if (freqData) {
-                        const minHighFreqOpacity = 0.01
-                        const highFreqReductionFactor = 0.015
-                        const lowFreqDampening = 300
-                        if (depth < 4) {
-                            // treat low frequencies differently as they seem to be less sensitive
-                            opacityMod = round(lowFreqIntensity / lowFreqDampening, 2)
-                        } else {
-                            const start = Math.floor(depth * stepSize)
-                            const end = Math.floor(((depth + 1) * stepSize) - 1)
-                            const chunk = freqData.slice(start, end)
-                            const average = chunk.reduce((acc, val) => acc + val, 0) / stepSize
-                            opacityMod = round((((average / 255) - highFreqReductionFactor * depth ) + minHighFreqOpacity), 2)
-                            // if (!(t % 1000)) console.log('depth', depth, 'start', start, 'end', end, 'chunk', chunk, 'average', average, 'stepSize', stepSize)
-                        }
-                    }
                     ;['second', 'minute'].forEach(name => {
                         const line = {
                             x0: parent.x1,
@@ -109,7 +100,7 @@ export default {
                             y1: 0,
                             rad: parent.rad + this.hands[name].rad,
                             length: (parent.length || handLength) * this.getLengthReductionFactor(),
-                            a: /*(1 - ((depth * (1 / $this.recursion))) - (depth ? 0.05 : 0)) **/ opacityMod,
+                            a: /*(1 - ((depth * (1 / $this.recursion))) - (depth ? 0.05 : 0)) **/ this.getAlphaMod(freqData, depth, stepSize),
                             l: depth ? $this.lightness : 100 - (100 - $this.lightness) / 2,
                             h: (depth * (360 / $this.recursion) + Math.floor(hueShift)) % 360,
                             depth
@@ -126,6 +117,24 @@ export default {
                     // this.drawLineSegment(data)
                     if (!data.noChildren && $this.recursion) drawNextLine(data)
                 })
+            },
+            getAlphaMod(freqData, depth, stepSize) {
+                const minHighFreqOpacity = 0.01
+                const highFreqReductionFactor = 0.015
+                const lowFreqDampening = 300
+                if (freqData) {
+                    if (depth < 4) {
+                        // treat low frequencies differently as they seem to be less sensitive
+                        return round(this.lowFreqIntensity / lowFreqDampening, 2)
+                    } else {
+                        const start = Math.floor(depth * stepSize)
+                        const end = Math.floor(((depth + 1) * stepSize) - 1)
+                        const chunk = freqData.slice(start, end)
+                        const average = chunk.reduce((acc, val) => acc + val, 0) / stepSize
+                        return round((((average / 255) - highFreqReductionFactor * depth ) + minHighFreqOpacity), 2)
+                    }
+                }
+                return 0
             },
             drawLineSegment({x0, y0, x1, y1, h = 0, l = 100, a = 1, depth}) {
                 this.globalCompositeOperation = depth ? 'destination-under' : 'destination-over'
