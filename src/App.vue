@@ -22,27 +22,36 @@ export default {
     data() {
         return {
             options: {
-                hueShift: { default: false },
-                recursion: { min: 2, max: 11, default: 10, },
-                lightness: { min: 0, max: 100, default: 80, },
-                hue: { min: 0, max: 360, default: 300 },
-                globalSpeed: { min: 0, max: 100, default: 50 },
-                lowFreqSensitivity: { min: 0, max: 100, default: 50 },
-                lowFreqThreshold: { min: 0, max: 100, default: 50 },
-                minHighFreqOpacity: { min: 0, max: 1, default: 0.01 },
-                highFreqOpacityReductionFactor: { min: 0, max: 1, default: 0.015 },
-                lowFreqDampening: { min: 0, max: 100, default: 300 },
+                visual: {
+                    hue: { min: 0, max: 360, default: 300 },
+                    hueShiftSpeed: { min: 0, max: 100, default: 0 },
+                    recursion: { min: 2, max: 11, default: 10, },
+                    lightness: { min: 0, max: 100, default: 80, },
+                    globalSpeed: { min: 0, max: 100, default: 50 },
+                    minHighFreqOpacity: { min: 0, max: 1, default: 0.01 },
+                },
+                calibration: {
+                    highFreqOpacityReductionFactor: { min: 0, max: 1, default: 0.015 },
+                    lowFreqSensitivity: { min: 0, max: 100, default: 50 },
+                    lowFreqThreshold: { min: 0, max: 100, default: 50 },
+                    lowFreqDampening: { min: 0, max: 100, default: 300 },
+                    smoothing: { min: 0, max: 1, default: 0.4 },
+                    dbThreshold: { min: 0, max: 100, default: 0, }
+                },
             },
-            controlsActive: false,
             analyzer: null,
             file: null,
             loaded: false,
+			controlsActive: !!this.getStored('controlsActive'),
         }
     },
     watch: {
         file(file) {
             if (file && this.playing) this.play(true)
-        }
+        },
+		controlsActive(active) {
+			this.setStored('controlsActive', active)
+		}
     },
     created() {
         window.addEventListener('keyup', (e) => {
@@ -101,13 +110,21 @@ export default {
             analyser.smoothingTimeConstant = 0.4
             analyser.maxDecibels = maxDb
             return this.analyzer = analyser
-        }
+        },
+		getStored(key) {
+			return localStorage.getItem(key)
+		},
+		setStored(key, value) {
+			if (value === false) localStorage.removeItem(key)
+			localStorage.setItem(key, value)
+		}
     }
 }
 </script>
 
 <style>
 html, body, #app, .container {
+	font-family: AppleSystemUIFont, "San F", sans-serif;
     height: 100%;
     width: 100%;
     margin: 0;

@@ -7,20 +7,11 @@
 
 <script>
 import Sketch from 'sketch-js'
+import {getRandomInt, round, lerp } from '@/utils'
+
 let t = getRandomInt(100000000)
 let hueShift = 300
 
-
-function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
-}
-
-function round(number, decimals) {
-    const pow = Math.pow(10, decimals)
-    return Math.round(number * pow) / pow
-}
-
-const lerp = (x, y, a) => x * (1 - a) + y * a;
 
 
 export default {
