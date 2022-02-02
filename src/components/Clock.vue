@@ -87,7 +87,7 @@ export default {
                     let opacityMod = 0
                     if (freqData) {
                         const minHighFreqOpacity = 0.01
-                        const highFreqReductionFactor = 0.02
+                        const highFreqReductionFactor = 0.015
                         const lowFreqDampening = 300
                         if (depth < 4) {
                             // treat low frequencies differently as they seem to be less sensitive
@@ -138,7 +138,7 @@ export default {
             },
             getLengthReductionFactor() {
                 // Generates a number between 0.75 and 0.95 that changes smoothly over time
-                return Math.round((Math.sin(Date.now() / 100000) / 10 + 0.85) * 1000) / 1000
+                return Math.round((Math.sin(t / 100000) / 10 + 0.85) * 1000) / 1000
             },
             getCenterPointXY() {
                 const rect = root.getBoundingClientRect()

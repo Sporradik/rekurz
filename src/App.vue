@@ -1,5 +1,5 @@
 <template>
-    <clock :analyzer="analyzer" msg="Welcome to Your Vue.js App" @click="play" @click.shift="mic" />
+    <clock :analyzer="analyzer" msg="Welcome to Your Vue.js App" />
 </template>
 
 <script>
@@ -18,10 +18,15 @@ export default {
         return {
             analyzer: null,
             file: null,
+            loaded: false,
         }
     },
     created() {
-        this.load()
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Enter') this.play()
+            if (e.code === 'Space') this.mic()
+        })
+        if (!this.file) this.load()
     },
     watch: {
         file(file) {
@@ -41,9 +46,10 @@ export default {
         mic() {
             const audioCtx = new AudioContext()
             navigator.getUserMedia({audio:true},
-              stream => {
-                  this.createBufferSource(audioCtx, stream).start()
-              }, () => alert('Error capturing audio.')
+                stream => {
+                    const source = audioCtx.createMediaStreamSource(stream)
+                    source.connect(this.createAnalyzer(audioCtx, {maxDb:  -20}))
+                }, () => alert('Error capturing audio.')
             )
         },
         play(force) {
@@ -60,21 +66,22 @@ export default {
                         console.error(e)
                     }
                 }
-                this.createBufferSource(audioCtx, audioBuffer).start()
+                const source = this.createBufferSource(audioCtx, audioBuffer)
+                source.connect(this.createAnalyzer(audioCtx))
+                source.start()
             })
         },
         createBufferSource(audioCtx, audioBuffer) {
             const bufferSource = audioCtx.createBufferSource()
             bufferSource.buffer = audioBuffer
-            bufferSource.connect(this.createAnalyzer(audioCtx))
             bufferSource.connect(audioCtx.destination)
             return bufferSource
         },
-        createAnalyzer(audioCtx) {
+        createAnalyzer(audioCtx, {maxDb = 0} = {}) {
             const analyser = audioCtx.createAnalyser();
             analyser.fftSize = 64
             analyser.smoothingTimeConstant = 0.4
-            analyser.maxDecibels = 0
+            analyser.maxDecibels = maxDb
             return this.analyzer = analyser
         }
     }
