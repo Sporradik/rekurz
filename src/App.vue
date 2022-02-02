@@ -1,5 +1,5 @@
 <template>
-    <clock :analyzer="analyzer" msg="Welcome to Your Vue.js App" @click="play" />
+    <clock :analyzer="analyzer" msg="Welcome to Your Vue.js App" @click="play" @click.shift="mic" />
 </template>
 
 <script>
@@ -38,6 +38,14 @@ export default {
             }
             fileReader.readAsArrayBuffer(blob)
         },
+        mic() {
+            const audioCtx = new AudioContext()
+            navigator.getUserMedia({audio:true},
+              stream => {
+                  this.createBufferSource(audioCtx, stream).start()
+              }, () => alert('Error capturing audio.')
+            )
+        },
         play(force) {
             if (this.playing && !force) return
             this.playing = true
@@ -52,18 +60,22 @@ export default {
                         console.error(e)
                     }
                 }
-                const bufferSource = audioCtx.createBufferSource()
-                bufferSource.buffer = audioBuffer
-
-                const analyser = audioCtx.createAnalyser();
-                bufferSource.connect(analyser)
-                analyser.fftSize = 64
-                analyser.smoothingTimeConstant = 0.4
-                analyser.maxDecibels = 0
-                bufferSource.connect(audioCtx.destination)
-                this.analyzer = analyser
-                bufferSource.start()
+                this.createBufferSource(audioCtx, audioBuffer).start()
             })
+        },
+        createBufferSource(audioCtx, audioBuffer) {
+            const bufferSource = audioCtx.createBufferSource()
+            bufferSource.buffer = audioBuffer
+            bufferSource.connect(this.createAnalyzer(audioCtx))
+            bufferSource.connect(audioCtx.destination)
+            return bufferSource
+        },
+        createAnalyzer(audioCtx) {
+            const analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 64
+            analyser.smoothingTimeConstant = 0.4
+            analyser.maxDecibels = 0
+            return this.analyzer = analyser
         }
     }
 }
