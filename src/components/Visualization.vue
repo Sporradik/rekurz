@@ -10,7 +10,7 @@ import Sketch from 'sketch-js'
 import {getRandomInt, round, lerp } from '@/utils'
 
 let t = getRandomInt(100000000)
-let hueShift = 300
+let hueShift = 0
 
 
 
@@ -75,10 +75,11 @@ export default {
                 // shift values
                 t = Math.round(t + this.velocity)
                 this.lowFreqIntensity = this.getLowFreqIntensity(freqData)
-                // hueShift = Math.round((hueShift + 0.1) * 100) / 100
-                // if (hueShift > 360) hueShift = 0
+                hueShift = Math.round((hueShift + 1) * 100) / 100
+                if (hueShift > 360) hueShift = 0
 
-                if (this.lowFreqIntensity > this.velocity) this.velocity = round(lerp(this.lowFreqIntensity, this.velocity, 0.2), 2)
+				// speed up fase, slow down slow
+                if (this.lowFreqIntensity > this.velocity) this.velocity = this.lowFreqIntensity
                 else this.velocity = round(lerp(this.lowFreqIntensity, this.velocity, 0.95), 2)
 
 
@@ -172,10 +173,8 @@ export default {
                 const slice = freqData.slice(0, length - 1)
                 const average = slice.reduce((acc, val) => acc + val, 0) / length
                 let velocity = round((average - 20) / 100, 2)
-                if (velocity > 1) velocity = velocity + ((velocity - 1) * sensitivity) + 1
-                else velocity = 1
-                // speed up fast, slow down slow
-                return velocity
+                if (velocity > 1) return velocity + ((velocity - 1) * sensitivity) + 1
+                else return 1
             }
         })
     },

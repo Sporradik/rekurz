@@ -1,13 +1,14 @@
 <template>
 	<div class="container" @dblclick="controlsActive = !controlsActive">
 		<visualization :analyzer="analyzer" msg="Welcome to Your Vue.js App" />
-		<controls v-if="controlsActive" v-model="options" @click.stop />
+		<controls v-if="controlsActive" v-model="savedSettings" :settings="$options.settings" @click.native.stop @dblclick.native.stop />
 	</div>
 </template>
 
 <script>
 import Visualization from './components/Visualization.vue'
 import Controls from './components/Controls'
+
 
 const vessel = require('./assets/MEDI120D-003-Glume_and_Phossa-Vessel.wav')
 const tension = require('./assets/Yoofee - 0815 Tension (Grey Master).wav')
@@ -19,26 +20,27 @@ export default {
         Visualization,
         Controls
     },
+	settings: {
+		visual: {
+			hue: { min: 0, max: 360, default: 300 },
+			hueShiftSpeed: { min: 0, max: 100, default: 0 },
+			recursion: { min: 2, max: 11, default: 10, },
+			lightness: { min: 0, max: 100, default: 80, },
+			globalSpeed: { min: 0, max: 100, default: 50 },
+			minHighFreqOpacity: { min: 0, max: 1, default: 0.01 },
+		},
+		calibration: {
+			highFreqOpacityReduction: { min: 0, max: 1, default: 0.015 },
+			lowFreqSensitivity: { min: 0, max: 100, default: 50 },
+			lowFreqThreshold: { min: 0, max: 100, default: 50 },
+			lowFreqDampening: { min: 0, max: 100, default: 300 },
+			smoothing: { min: 0, max: 1, default: 0.4 },
+			dbThreshold: { min: 0, max: 100, default: 0, }
+		},
+	},
     data() {
         return {
-            options: {
-                visual: {
-                    hue: { min: 0, max: 360, default: 300 },
-                    hueShiftSpeed: { min: 0, max: 100, default: 0 },
-                    recursion: { min: 2, max: 11, default: 10, },
-                    lightness: { min: 0, max: 100, default: 80, },
-                    globalSpeed: { min: 0, max: 100, default: 50 },
-                    minHighFreqOpacity: { min: 0, max: 1, default: 0.01 },
-                },
-                calibration: {
-                    highFreqOpacityReductionFactor: { min: 0, max: 1, default: 0.015 },
-                    lowFreqSensitivity: { min: 0, max: 100, default: 50 },
-                    lowFreqThreshold: { min: 0, max: 100, default: 50 },
-                    lowFreqDampening: { min: 0, max: 100, default: 300 },
-                    smoothing: { min: 0, max: 1, default: 0.4 },
-                    dbThreshold: { min: 0, max: 100, default: 0, }
-                },
-            },
+			savedSettings: {},
             analyzer: null,
             file: null,
             loaded: false,
@@ -111,6 +113,9 @@ export default {
             analyser.maxDecibels = maxDb
             return this.analyzer = analyser
         },
+		getStoredSettings() {
+			return this.ge
+		},
 		getStored(key) {
 			return localStorage.getItem(key)
 		},

@@ -1,11 +1,13 @@
 <template>
 	<div class="slider" :style="{'--knob-width': $options.knobWidthPx + 'px'}">
-		<div ref="sliderControl" class="slider-control" @click="onSliderClick">
-			<div class="track">
-				<div class="knob" :style="{left: valuePercent}" @mousedown="onMousedownKnob"></div>
+		<div class="slider-control-wrapper" @click="onSliderClick">
+			<div ref="sliderControl" class="slider-control">
+				<div class="track">
+					<div class="knob" :style="{left: valuePercent}" @mousedown="onMousedownKnob"></div>
+				</div>
 			</div>
 		</div>
-		<div class="value">{{valuePercent}}</div>
+		<div class="value">{{modelValue}}</div>
 	</div>
 </template>
 
@@ -16,13 +18,9 @@ import { round } from '@/utils'
 
 export default {
 	name: 'Slider',
-	// props: {
-	// 	modelValue: { type: Number, default: 100 },
-	// },
 	knobWidthPx: 12,
 	data() {
 		return {
-			modelValue: 100,
 			valueDecimal: 0,
 		}
 	},
@@ -31,24 +29,34 @@ export default {
 			return round(this.valueDecimal * 100) + '%'
 		}
 	},
+	watch: {
+		valueDecimal(value) {
+			const range = this.max - this.min
+			const decimals = range <= 1 ? 2 : 0
+			const adjstedValue = round(value * range + this.min, decimals)
+			console.log('adjstedValue', adjstedValue)
+			this.$emit('update:modelValue', adjstedValue)
+		}
+	},
 	props: {
+		modelValue: { type: Number, default: 100 },
 		min: { type: Number, default: 0 },
 		max: { type: Number, default: 100 }
 	},
 	methods: {
-		onSliderClick() {
-
+		onSliderClick(e) {
+			this.valueDecimal = this.getRelativeMousePosition(e)
 		},
 		onMousedownKnob() {
 			window.addEventListener('mouseup', this.onMouseup, { once: true })
 			window.addEventListener('mousemove', this.onMousemove)
 		},
 		onMousemove(e) {
+			this.valueDecimal = this.getRelativeMousePosition(e)
+		},
+		getRelativeMousePosition(e) {
 			const {left, width} = this.$refs.sliderControl.getBoundingClientRect()
-			const {pageX: x} = e
-			const value = (x - left) / width
-			this.valueDecimal = Math.min(Math.max(round(value, 5), 0), 1)
-			console.log('e', e)
+			return Math.min(Math.max(round((e.pageX - left) / width, 5), 0), 1)
 		},
 		onMouseup() {
 			window.removeEventListener('mousemove', this.onMousemove)
@@ -60,9 +68,10 @@ export default {
 
 
 <style scoped>
-	.slider { --knob-width: 12px; padding: 4px 0; display: flex; align-items: stretch; gap: 10px; }
-		.slider-control { margin-right: var(--knob-width); position: relative; display: flex; align-items: center; flex-grow: 1; }
-			.track { margin-right: calc(var(--knob-width) * -1); flex-grow: 1; border-top: 2px rgba(255, 255, 255, 0.5) solid; }
-			.knob { width: 12px; position: absolute; top: 0; bottom: 0; background-color: lightgray; border-radius: 5px; }
-		.value { min-width: 5ch; text-align: right; }
+	.slider { --knob-width: 12px; padding: 4px 0; display: flex; align-items: stretch; }
+		.slider-control-wrapper { padding-right: var(--knob-width); display: flex; align-items: stretch; flex-grow: 1; }
+			.slider-control { min-height: 15px; margin-right: var(--knob-width);margin-right: var(--knob-width); position: relative; display: flex; align-items: center; flex-grow: 1; }
+				.track { margin-right: calc(var(--knob-width) * -1); flex-grow: 1; border-top: 2px rgba(255, 255, 255, 0.5) solid; }
+				.knob { width: 12px; position: absolute; top: 0; bottom: 0; background-color: lightgray; border-radius: 5px; }
+			.value { min-width: 5ch; text-align: right; }
 </style>

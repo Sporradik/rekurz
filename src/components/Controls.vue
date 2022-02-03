@@ -1,10 +1,10 @@
 <template>
 	<div class="controls">
-		<div class="section" v-for="(controls, name) in modelValue" :key="name">
+		<div class="section" v-for="(controls, name) in settings" :key="name">
 			<h3>{{ camelCaseToReadable(name) }}</h3>
 			<div class="control" v-for="(control, n) in controls" :key="n">
 				<span>{{ camelCaseToReadable(n) }}</span>
-				<slider :min="control.min" :max="control.max" :value="control.value" @input="updateValue(key, $event)" />
+				<slider :min="control.min" :max="control.max" v-model="control.value" />
 			</div>
 		</div>
 	</div>
@@ -18,7 +18,7 @@ export default {
 	name: 'Controls',
 	components: { Slider },
     props: {
-        modelValue: { type: Object, required: true }
+        settings: { type: Object, required: true }
     },
 	methods: {
 		camelCaseToReadable(string) {
@@ -32,7 +32,7 @@ export default {
 
 
 <style scoped>
- .controls { padding: 20px; position: fixed; top: 0; left: 0; color: white; user-select: none; }
+ .controls { min-width: 300px; padding: 20px; position: fixed; top: 0; left: 0; color: white; user-select: none; }
  	.controls h3 { margin-top: 0; }
  	.section { margin-bottom: 20px; }
 		.control { padding: 6px 0; }
