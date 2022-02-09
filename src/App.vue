@@ -1,6 +1,6 @@
 <template>
 	<div class="container" @dblclick="controlsActive = !controlsActive">
-		<visualization :analyzer="analyzer" v-bind="settings" msg="Welcome to Your Vue.js App" />
+		<visualization :analyzer="analyzer" v-bind="settings" :settings="$options.settings" />
 		<controls v-if="controlsActive" v-model="settings" :settings="$options.settings" @click.native.stop @dblclick.native.stop @reset="resetSettings" />
 	</div>
 </template>
@@ -30,7 +30,7 @@ export default {
 			minHighFreqOpacity: { min: 0, max: 1, default: 0.01 },
 		},
 		calibration: {
-			highFreqOpacityReduction: { min: 0, max: 1, default: 0.015 },
+			highFreqOpacityReduction: { min: 0, max: 1, default: 0.02 },
 			lowFreqSensitivity: { default: 50 },
 			lowFreqThreshold: { default: 50 },
 			lowFreqDampening: { default: 300 },

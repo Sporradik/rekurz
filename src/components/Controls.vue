@@ -34,7 +34,7 @@ export default {
 
 
 <style scoped>
- .controls { min-width: 300px; padding: 20px; position: fixed; top: 0; left: 0; color: white; user-select: none; }
+ .controls { min-width: 300px; padding: 20px; position: fixed; top: 0; left: 0; color: white; user-select: none; background-color: rgba(0,0,0, 0.5); }
  	.controls h3 { margin-top: 0; }
  	.section { margin-bottom: 20px; }
 		.control { padding: 6px 0; }
