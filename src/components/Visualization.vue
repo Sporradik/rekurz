@@ -30,15 +30,18 @@ export default {
         },
     },
     watch: {
-        analyzer(val) {
-            if (val) this.sketch.start()
+        analyzer: {
+			handler(val) {
+            	if (val) this.sketch.start()
+			},
+			immediate: true
         }
     },
     mounted() {
         const $this = this
         const container = this.$refs['canvas-container']
         const root = this.$refs['analog-clock']
-        const handLength = 250
+        const handLength = 300
         this.sketch = Sketch.create({
             container,
             height: container.clientHeight,
@@ -53,8 +56,8 @@ export default {
                 this.velocity = 1
                 this.center = this.getCenterPointXY()
                 this.hands = {
-                    hour: {interval: 12 * 60 * 60 * 1000, length: 100, noChildren: true},
-                    minute: {interval: 40 * 60 * 1000 },
+                    hour: {interval: 60 * 60 * 1000, length: 100, noChildren: true},
+                    minute: {interval: 100 * 1333 },
                     second: {interval: 40 * 1000 }
                 }
                 Object.values(this.hands).forEach(hand => {
@@ -168,7 +171,7 @@ export default {
             },
             getLowFreqIntensity(freqData) {
                 // need interpolation
-                const sensitivity = 500
+                const sensitivity = 300
                 const length = Math.floor(freqData.length / 10)
                 const slice = freqData.slice(0, length - 1)
                 const average = slice.reduce((acc, val) => acc + val, 0) / length

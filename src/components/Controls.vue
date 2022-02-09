@@ -4,7 +4,7 @@
 			<h3>{{ camelCaseToReadable(name) }}</h3>
 			<div class="control" v-for="(control, n) in controls" :key="n">
 				<span>{{ camelCaseToReadable(n) }}</span>
-				<slider :min="control.min" :max="control.max" v-model="control.value" />
+				<slider :min="control.min" :max="control.max" v-model="modelValue[n]" />
 			</div>
 		</div>
 	</div>
@@ -18,6 +18,7 @@ export default {
 	name: 'Controls',
 	components: { Slider },
     props: {
+		modelValue: { type: Object, required: true },
         settings: { type: Object, required: true }
     },
 	methods: {
