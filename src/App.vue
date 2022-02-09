@@ -54,7 +54,10 @@ export default {
 		controlsActive(active) {
 			this.setStored('controlsActive', active)
 		},
-		settings: 'saveSettings'
+		settings: {
+			handler: 'saveSettings',
+			deep: true,
+		}
     },
     created() {
 		console.log('this.settings', this.settings)

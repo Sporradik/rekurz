@@ -39,14 +39,13 @@ export default {
 		valueDecimal(value) {
 			const range = this.max - this.min
 			const decimals = range <= 1 ? 2 : 0
-			const adjustedValue = round(value * range + this.
-				min, decimals)
+			const adjustedValue = round(value * range + this.min, decimals)
 			this.$emit('update:modelValue', adjustedValue)
 		}
 	},
 	methods: {
 		modelValueToDecimal() {
-			return round( invlerp(this.min, this.max, this.modelValue), 3)
+			return round(invlerp(this.min, this.max, this.modelValue), 3)
 		},
 		onSliderClick(e) {
 			this.valueDecimal = this.getRelativeMousePosition(e)
