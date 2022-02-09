@@ -1,7 +1,7 @@
 <template>
 	<div class="container" @dblclick="controlsActive = !controlsActive">
-		<visualization :analyzer="analyzer" msg="Welcome to Your Vue.js App" />
-		<controls v-if="controlsActive" v-model="settings" :settings="$options.settings" @click.native.stop @dblclick.native.stop />
+		<visualization :analyzer="analyzer" v-bind="settings" msg="Welcome to Your Vue.js App" />
+		<controls v-if="controlsActive" v-model="settings" :settings="$options.settings" @click.native.stop @dblclick.native.stop @reset="resetSettings" />
 	</div>
 </template>
 
@@ -60,7 +60,6 @@ export default {
 		}
     },
     created() {
-		console.log('this.settings', this.settings)
         window.addEventListener('keyup', (e) => {
             if (e.code === 'Enter') this.play()
             if (e.code === 'Space') this.mic()
@@ -128,8 +127,11 @@ export default {
 				return flatSettings
 			}
 		},
+		resetSettings() {
+			localStorage.removeItem('settings')
+			this.settings = this.getStoredSettings()
+		},
 		saveSettings(settings) {
-			console.log('settings', settings)
 			localStorage.setObject('settings', settings)
 		},
 		getStored(key) {
@@ -154,4 +156,19 @@ html, body, #app, .container {
 #app {
     background-color: black;
 }
+
+input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; border: none; color: white; text-align: right; font-size: inherit; }
+	input:focus-visible { outline: none; }
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+	  -webkit-appearance: none;
+	  margin: 0;
+	}
+	input[type=number] {
+	  -moz-appearance: textfield;
+	}
+
+.button { padding: 7px 10px; display: inline-block; opacity: 0.6; border: 1px solid #fff; border-radius: 100px; cursor: pointer; transition: opacity 0.2s ease; }
+	.button:hover { opacity: 0.9; }
+
 </style>

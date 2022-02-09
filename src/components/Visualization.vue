@@ -17,17 +17,19 @@ let hueShift = 0
 export default {
     name: 'Visualization',
     props: {
-        analyzer: { type: Object, default: null }
-    },
-    computed: {
-        recursion() {
-            return 10
-            // return parseInt(customization.analogClockRecursion) - 1
-        },
-        lightness() {
-            return 80
-            // return parseInt(customization.analogClockLightness)
-        },
+        analyzer: { type: Object, default: null },
+		hue: { type: Number, required: true },
+		hueShiftSpeed: { type: Number, required: true },
+		recursion: { type: Number, required: true },
+		lightness: { type: Number, required: true },
+		globalSpeed: { type: Number, required: true },
+		minHighFreqOpacity: { type: Number, required: true },
+		highFreqOpacityReduction: { type: Number, required: true },
+		lowFreqSensitivity: { type: Number, required: true },
+		lowFreqThreshold: { type: Number, required: true },
+		lowFreqDampening: { type: Number, required: true },
+		smoothing: { type: Number, required: true },
+		dbThreshold: { type: Number, required: true },
     },
     watch: {
         analyzer: {

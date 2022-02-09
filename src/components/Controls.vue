@@ -7,6 +7,7 @@
 				<slider v-model="modelValue[n]" :min="control.min" :max="control.max" />
 			</div>
 		</div>
+		<div class="button" @click="$emit('reset')">Reset All</div>
 	</div>
 </template>
 
