@@ -1,10 +1,10 @@
 <template>
 	<div class="controls">
-		<div class="section" v-for="(controls, name) in settings" :key="name">
+		<div v-for="(controls, name) in settings" :key="name" class="section">
 			<h3>{{ camelCaseToReadable(name) }}</h3>
-			<div class="control" v-for="(control, n) in controls" :key="n">
+			<div v-for="(control, n) in controls" :key="n" class="control">
 				<span>{{ camelCaseToReadable(n) }}</span>
-				<slider :min="control.min" :max="control.max" v-model="modelValue[n]" />
+				<slider v-model="modelValue[n]" :min="control.min" :max="control.max" />
 			</div>
 		</div>
 	</div>

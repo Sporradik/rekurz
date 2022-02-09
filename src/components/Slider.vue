@@ -7,7 +7,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="value">{{modelValue}}</div>
+		<div class="value">{{ modelValue }}</div>
 	</div>
 </template>
 
@@ -19,6 +19,12 @@ import {invlerp, round} from '@/utils'
 export default {
 	name: 'Slider',
 	knobWidthPx: 12,
+	props: {
+		modelValue: { type: Number, default: 100 },
+		min: { type: Number, default: 0 },
+		max: { type: Number, default: 100 }
+	},
+	emits: ['update:modelValue'],
 	data() {
 		return {
 			valueDecimal: this.modelValueToDecimal(),
@@ -37,11 +43,6 @@ export default {
 				min, decimals)
 			this.$emit('update:modelValue', adjustedValue)
 		}
-	},
-	props: {
-		modelValue: { type: Number, default: 100 },
-		min: { type: Number, default: 0 },
-		max: { type: Number, default: 100 }
 	},
 	methods: {
 		modelValueToDecimal() {
