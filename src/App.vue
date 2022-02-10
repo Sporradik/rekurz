@@ -30,14 +30,15 @@ const settings = {
 		recursion: {min: 2, max: 10, default: 10,},
 		lightness: {default: 80,},
 		globalSpeed: {default: 50},
-		minHighFreqOpacity: {min: 0, max: 1, default: 0.01},
+		minHighFreqOpacity: { min: 0, max: 1, default: 0.01},
+		highFreqOpacityReduction: {default: 0.02},
+		lowFreqDampening: {default: 50},
 		scale: { default: 50 },
+		thickness: { default: 2, }
 	},
 	calibration: {
-		highFreqOpacityReduction: {default: 0.02},
 		lowFreqSensitivity: {default: 50},
 		lowFreqThreshold: {default: 50, unit: 'db'},
-		lowFreqDampening: {default: 50},
 		smoothing: {min: 0, max: 1, default: 0.4},
 		dbThreshold: {default: 0 }
 	},
@@ -135,7 +136,7 @@ export default {
         },
         createAnalyzer(audioCtx, {maxDb = 0} = {}) {
             const analyser = audioCtx.createAnalyser();
-            analyser.fftSize = 64
+            analyser.fftSize = 128
             analyser.smoothingTimeConstant = 0.4
             analyser.maxDecibels = maxDb
             return this.analyzer = analyser
@@ -199,7 +200,7 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 <style scoped>
 .container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.5); color: var(--text-color); background-color: var(--bg-color); }
 	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.3); }
-.prompt { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: 2vw; cursor: pointer; }
+.prompt { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: 2vw; cursor: pointer; user-select: none; }
 	.prompt > div { cursor: pointer; opacity: 0.8; transition: opacity 0.2s ease; }
 	.prompt > div:hover { opacity: 1; }
 </style>

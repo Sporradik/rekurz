@@ -24,6 +24,7 @@ export default {
 		lowFreqThreshold: { type: Number, required: true },
 		lowFreqDampening: { type: Number, required: true },
 		scale: { type: Number, required: true },
+		thickness: { type: Number, required: true },
 		settings: { type: Object, required: true },
     },
 	computed: {
@@ -85,9 +86,7 @@ export default {
 				autostart: false,
 				resize() {
 					this.setup()
-					console.log('$this.decimalLineLength', $this.decimalLineLength)
 					this.lineLength = this.getLineLength()
-					console.log('this.lineLength', this.lineLength)
 				},
 				getLineLength() {
 					return round(Math.min((this.height, this.width) / 5) * ($this.decimalScale * 2))
@@ -115,6 +114,8 @@ export default {
 				draw() {
 					// get stream frequency data
 					const freqData = Array.from(this.getByteFrequencyData())
+					const trimHighsIndex = round(freqData.length / 11)
+					freqData.splice(-trimHighsIndex, freqData.length - trimHighsIndex)
 					const stepSize = Math.floor(freqData.length / $this.recursion)
 
 					// shift values
@@ -157,7 +158,7 @@ export default {
 					Object.values(this.hands).forEach(data => {
 						data.rad = this.getRootRad(data.interval)
 						Object.assign(data, this.getEndPointXY(data, true))
-						// this.drawLineSegment(data)
+						this.drawLineSegment(data)
 						if (!data.noChildren && $this.recursion) drawNextLine(data)
 					})
 				},
@@ -167,8 +168,11 @@ export default {
 						const end = Math.floor(((depth + 1) * stepSize) - 1)
 						const chunk = freqData.slice(start, end)
 						const average = chunk.reduce((acc, val) => acc + val, 0) / stepSize
-						const frequencyBasedOpacity = round((((average / 255) - ($this.decimalHighFreqOpacityReduction * 0.04) * depth ) + $this.minHighFreqOpacity), 2)
-						if (depth < 4) {
+						const q = 6
+						const curve = depth < q ? depth : q - (depth % q)
+						const frequencyMod = ($this.decimalHighFreqOpacityReduction * 0.02) * curve
+						const frequencyBasedOpacity = round((((average / 255) - (frequencyMod)) + $this.minHighFreqOpacity), 2)
+						if (depth < 6) {
 							return round(lerp(this.lowFreqIntensity / ($this.decimalLowFreqDampening * 600), frequencyBasedOpacity, depth * 0.1), 3)
 						}
 						return frequencyBasedOpacity
@@ -180,7 +184,7 @@ export default {
 					this.beginPath()
 					this.moveTo(x0, y0)
 					this.lineTo(x1, y1)
-					this.lineWidth = 2
+					this.lineWidth = $this.thickness
 					this.strokeStyle = `HSLA(${h}, 100%, ${l}%, ${a})`
 					this.stroke()
 				},
