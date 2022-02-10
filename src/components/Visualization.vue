@@ -10,7 +10,7 @@ import {getRandomInt, round, lerp, invlerp} from '@/utils'
 let t = getRandomInt(100000000)
 
 export default {
-    name: 'Visualiztion',
+    name: 'Visualization',
     props: {
         analyzer: { type: Object, default: null },
 		hue: { type: Number, required: true },
@@ -28,7 +28,7 @@ export default {
     watch: {
         analyzer: {
 			handler(val) {
-            	if (val && this.$refs['canvas-container']) {
+            	if (val && this.sketch) {
 					this.sketch.start()
 				}
 			},
@@ -44,7 +44,9 @@ export default {
 		}
 	},
     mounted() {
+		if (window.sketch) window.sketch.destroy()
     	this.createSketch()
+		if (this.analyzer) this.sketch.start()
     },
 	methods: {
 		parameterToDecimal(name) {
@@ -65,7 +67,7 @@ export default {
 			const $this = this
 			const container = this.$refs['canvas-container']
 			const handLength = 300
-			this.sketch = Sketch.create({
+			this.sketch = window.sketch = Sketch.create({
 				container,
 				height: container.clientHeight,
 				width: container.clientWidth,
