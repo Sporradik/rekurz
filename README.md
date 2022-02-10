@@ -1,4 +1,4 @@
-# fractal-clock
+# rekurz
 
 ## Project setup
 ```
