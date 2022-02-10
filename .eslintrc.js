@@ -37,6 +37,7 @@ module.exports = {
 				},
 			},
 		],
+		'vue/no-v-model-argument': 1,
 		'vue/no-parsing-error': 1,
 		'vue/valid-v-for': 1,
 		'vue/require-v-for-key': 1,

@@ -1,13 +1,21 @@
 <template>
-	<div class="container" @dblclick="controlsActive = !controlsActive">
+	<div class="container" @dblclick="controlsActive = !controlsActive" :class="{light: lightMode} ">
 		<transition name="fade">
-			<visualization v-if="analyzer" :analyzer="analyzer" v-bind="settings" :settings="$options.settings" />
-			<div class="prompt" v-else>
-				<div>[ space ] to start</div>
-				<div>(( double click )) to toggle settings</div>
+			<visualization v-if="analyzer" :analyzer="analyzer" v-bind="settings" :settings="$options.allSettings" />
+			<div v-else class="prompt">
+				<div @click="mic">[ space ] to start</div>
+				<div @click="controlsActive = !controlsActive">(( double click anywhere )) to toggle settings</div>
 			</div>
 		</transition>
-		<controls v-if="controlsActive" v-model="settings" :settings="$options.settings" @click.native.stop @dblclick.native.stop @reset="resetSettings" />
+		<controls
+			v-if="controlsActive"
+			v-model="settings"
+			v-model:light-mode="lightMode"
+			:settings="$options.settings"
+			@click.native.stop
+			@dblclick.native.stop
+			@reset="resetSettings"
+		/>
 	</div>
 </template>
 
@@ -15,6 +23,27 @@
 import Visualization from './components/Visualization.vue'
 import Controls from './components/Controls'
 
+const settings = {
+	visual: {
+		hue: {min: 0, max: 360, default: 300},
+		hueShiftSpeed: {default: 0},
+		recursion: {min: 2, max: 10, default: 10,},
+		lightness: {default: 80,},
+		globalSpeed: {default: 50},
+		minHighFreqOpacity: {min: 0, max: 1, default: 0.01},
+		scale: { default: 50 },
+	},
+	calibration: {
+		highFreqOpacityReduction: {default: 0.02},
+		lowFreqSensitivity: {default: 50},
+		lowFreqThreshold: {default: 50, unit: 'db'},
+		lowFreqDampening: {default: 50},
+		smoothing: {min: 0, max: 1, default: 0.4},
+		dbThreshold: {default: 0 }
+	},
+
+}
+const allSettings = Object.assign.apply(null, [{}, ...Object.values(settings)])
 
 const vessel = require('./assets/MEDI120D-003-Glume_and_Phossa-Vessel.wav')
 const tension = require('./assets/Yoofee - 0815 Tension (Grey Master).wav')
@@ -26,24 +55,8 @@ export default {
         Visualization,
         Controls
     },
-	settings: {
-		visual: {
-			hue: { min: 0, max: 360, default: 300 },
-			hueShiftSpeed: { default: 0 },
-			recursion: { min: 2, max: 10, default: 10, },
-			lightness: { default: 80, },
-			globalSpeed: { default: 50 },
-			minHighFreqOpacity: { min: 0, max: 1, default: 0.01 },
-		},
-		calibration: {
-			highFreqOpacityReduction: { default: 0.02 },
-			lowFreqSensitivity: { default: 50 },
-			lowFreqThreshold: { default: 50, unit: 'db' },
-			lowFreqDampening: { default: 50 },
-			smoothing: { min: 0, max: 1, default: 0.4 },
-			dbThreshold: { default: 0, }
-		},
-	},
+	settings,
+	allSettings,
     data() {
         return {
 			settings: this.getStoredSettings(),
@@ -51,6 +64,7 @@ export default {
             file: null,
             loaded: false,
 			controlsActive: !!this.getStored('controlsActive'),
+			lightMode: !!this.getStored('lightMode')
         }
     },
     watch: {
@@ -59,6 +73,9 @@ export default {
         },
 		controlsActive(active) {
 			this.setStored('controlsActive', active)
+		},
+		lightMode(active) {
+			this.setStored('lightMode', active)
 		},
 		settings: {
 			handler: 'saveSettings',
@@ -159,11 +176,8 @@ html, body, #app, .container {
     margin: 0;
 }
 
-#app {
-    background-color: black;
-}
 
-input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; border: none; color: white; text-align: right; font-size: inherit; }
+input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; border: none; color: var(--text-color); text-align: right; font-size: inherit; }
 	input:focus-visible { outline: none; }
 	input::-webkit-outer-spin-button,
 	input::-webkit-inner-spin-button {
@@ -174,7 +188,7 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 	  -moz-appearance: textfield;
 	}
 
-.button { padding: 7px 10px; display: inline-block; opacity: 0.8; border: 1px solid #fff; background-color: white; cursor: pointer; color: black; transition: opacity 0.2s ease; }
+.button { padding: 7px 10px; display: inline-block; opacity: 0.8; background-color: var(--text-color); cursor: pointer; color: var(--bg-color); transition: opacity 0.2s ease; }
 	.button:hover { opacity: 1 }
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
@@ -183,5 +197,9 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 </style>
 
 <style scoped>
-.prompt { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; color: white; font-size: 2vw; }
+.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.5); color: var(--text-color); background-color: var(--bg-color); }
+	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.3); }
+.prompt { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: 2vw; cursor: pointer; }
+	.prompt > div { cursor: pointer; opacity: 0.8; transition: opacity 0.2s ease; }
+	.prompt > div:hover { opacity: 1; }
 </style>

@@ -7,7 +7,7 @@
 				</div>
 			</div>
 		</div>
-		<input class="value" type="number" v-model="modelValue" @keyup.enter.stop="setConstrainedValue" @blur="setConstrainedValue">
+		<input v-model="modelValue" class="value" type="number" @keyup.enter.stop="setConstrainedValue" @blur="setConstrainedValue">
 	</div>
 </template>
 
@@ -89,7 +89,8 @@ export default {
 	.slider { --knob-width: 12px; padding: 4px 0; display: flex; align-items: stretch; }
 		.slider-control-wrapper { padding-right: var(--knob-width); display: flex; align-items: stretch; flex-grow: 1; }
 			.slider-control { min-height: 15px; margin-right: var(--knob-width); margin-right: var(--knob-width); position: relative; display: flex; align-items: center; flex-grow: 1; }
-				.track { margin-right: calc(var(--knob-width) * -1); flex-grow: 1; border-top: 2px rgba(255, 255, 255, 0.5) solid; }
+				.track { --color: rgba(255, 255, 255, 0.5); margin-right: calc(var(--knob-width) * -1); flex-grow: 1; border-top: 2px var(--color) solid; }
+					.light .track  { --color: rgba(0,0,0, 0.5) }
 				.knob { width: 12px; position: absolute; top: 0; bottom: 0; background-color: lightgray; border-radius: 5px; }
 			.value { width: 5ch; text-align: right; }
 </style>

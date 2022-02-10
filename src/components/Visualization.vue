@@ -23,20 +23,8 @@ export default {
 		lowFreqSensitivity: { type: Number, required: true },
 		lowFreqThreshold: { type: Number, required: true },
 		lowFreqDampening: { type: Number, required: true },
+		scale: { type: Number, required: true },
 		settings: { type: Object, required: true },
-    },
-    watch: {
-        analyzer: {
-			handler(val) {
-            	if (val && this.sketch) {
-					this.sketch.start()
-				}
-			},
-			immediate: true
-        },
-		hue(value) {
-			this.sketch.hueShift = value
-		}
     },
 	computed: {
 		decimalGlobalSpeed() {
@@ -54,7 +42,26 @@ export default {
 		decimalLowFreqThreshold() {
 			return this.parameterToDecimal('lowFreqThreshold', true)
 		},
+		decimalScale() {
+			return this.parameterToDecimal('scale', true)
+		}
 	},
+    watch: {
+        analyzer: {
+			handler(val) {
+            	if (val && this.sketch) {
+					this.sketch.start()
+				}
+			},
+			immediate: true
+        },
+		hue(value) {
+			this.sketch.hueShift = value
+		},
+		decimalScale() {
+			this.sketch.lineLength = this.sketch.getLineLength()
+		}
+    },
     mounted() {
 		if (window.sketch) window.sketch.destroy()
     	this.createSketch()
@@ -62,23 +69,13 @@ export default {
     },
 	methods: {
 		parameterToDecimal(name) {
-			const { min = 0, max = 100 } = this.getSettingConfig(name)
+			const { min = 0, max = 100 } = this.settings[name]
 			return round(invlerp(min, max, this[name]), 3)
 		},
-		getSettingConfig(name) {
-			let config
-			Object.values(this.settings).some(category => {
-				Object.entries(category).some(([n, c]) => {
-					if (n === name) return config = c
-				})
-				return config
-			})
-			return config
-		},
+
 		createSketch() {
 			const $this = this
 			const container = this.$refs['canvas-container']
-			const handLength = 300
 			this.sketch = window.sketch = Sketch.create({
 				container,
 				height: container.clientHeight,
@@ -88,8 +85,15 @@ export default {
 				autostart: false,
 				resize() {
 					this.setup()
+					console.log('$this.decimalLineLength', $this.decimalLineLength)
+					this.lineLength = this.getLineLength()
+					console.log('this.lineLength', this.lineLength)
+				},
+				getLineLength() {
+					return round(Math.min((this.height, this.width) / 5) * ($this.decimalScale * 2))
 				},
 				setup() {
+					this.lineLength = this.getLineLength()
 					this.hueShift = $this.hue
 					this.velocity = 1
 					this.center = this.getCenterPointXY()
@@ -138,7 +142,7 @@ export default {
 								x1: 0,
 								y1: 0,
 								rad: parent.rad + this.hands[name].rad,
-								length: (parent.length || handLength) * this.getLengthReductionFactor(),
+								length: (parent.length || this.lineLength) * this.getLengthReductionFactor(),
 								a: /*(1 - ((depth * (1 / $this.recursion))) - (depth ? 0.05 : 0)) **/ alphaMod,
 								l: depth ? $this.lightness : 100 - (100 - $this.lightness) / 2,
 								h: (depth * (360 / $this.recursion) + Math.floor(this.hueShift)) % 360,
@@ -194,7 +198,7 @@ export default {
 					return (deg * Math.PI) / 180
 				},
 				getEndPointXY(hand) {
-					const length = hand.length || handLength
+					const length = hand.length || this.lineLength
 					const oppositeLength = Math.sin(hand.rad) * length
 					const adjacentLength = Math.cos(hand.rad) * length
 					const x1 = hand.x0 + oppositeLength
