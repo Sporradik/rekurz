@@ -30,10 +30,10 @@ export default {
 			minHighFreqOpacity: { min: 0, max: 1, default: 0.01 },
 		},
 		calibration: {
-			highFreqOpacityReduction: { min: 0, max: 1, default: 0.02 },
+			highFreqOpacityReduction: { default: 0.02 },
 			lowFreqSensitivity: { default: 50 },
-			lowFreqThreshold: { default: 50 },
-			lowFreqDampening: { default: 300 },
+			lowFreqThreshold: { default: 50, unit: 'db' },
+			lowFreqDampening: { default: 50 },
 			smoothing: { min: 0, max: 1, default: 0.4 },
 			dbThreshold: { default: 0, }
 		},

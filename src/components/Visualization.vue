@@ -41,7 +41,19 @@ export default {
 	computed: {
 		decimalGlobalSpeed() {
 			return this.parameterToDecimal('globalSpeed')
-		}
+		},
+		decimalLowFreqDampening() {
+			return this.parameterToDecimal('lowFreqDampening')
+		},
+		decimalHighFreqOpacityReduction() {
+			return this.parameterToDecimal('highFreqOpacityReduction')
+		},
+		decimalLowFreqSensitivity() {
+			return this.parameterToDecimal('lowFreqSensitivity')
+		},
+		decimalLowFreqThreshold() {
+			return this.parameterToDecimal('lowFreqThreshold', true)
+		},
 	},
     mounted() {
 		if (window.sketch) window.sketch.destroy()
@@ -146,20 +158,16 @@ export default {
 					})
 				},
 				getAlphaMod(freqData, depth, stepSize) {
-					const minHighFreqOpacity = 0.01
-					const highFreqReductionFactor = 0.02
-					const lowFreqDampening = 300
 					if (freqData) {
+						const start = Math.floor(depth * stepSize)
+						const end = Math.floor(((depth + 1) * stepSize) - 1)
+						const chunk = freqData.slice(start, end)
+						const average = chunk.reduce((acc, val) => acc + val, 0) / stepSize
+						const frequencyBasedOpacity = round((((average / 255) - ($this.decimalHighFreqOpacityReduction * 0.04) * depth ) + $this.minHighFreqOpacity), 2)
 						if (depth < 4) {
-							// treat low frequencies differently as they seem to be less sensitive
-							return round(this.lowFreqIntensity / lowFreqDampening, 2)
-						} else {
-							const start = Math.floor(depth * stepSize)
-							const end = Math.floor(((depth + 1) * stepSize) - 1)
-							const chunk = freqData.slice(start, end)
-							const average = chunk.reduce((acc, val) => acc + val, 0) / stepSize
-							return round((((average / 255) - $this.highFreqOpacityReduction * depth ) + $this.minHighFreqOpacity), 2)
+							return round(lerp(this.lowFreqIntensity / ($this.decimalLowFreqDampening * 600), frequencyBasedOpacity, depth * 0.1), 3)
 						}
+						return frequencyBasedOpacity
 					}
 					return 0
 				},
@@ -203,11 +211,12 @@ export default {
 				},
 				getLowFreqIntensity(freqData) {
 					// need interpolation
-					const sensitivity = 300
+					const sensitivity = $this.decimalLowFreqSensitivity * 600
+					const lowThreshold = (($this.decimalLowFreqThreshold * -1) + 1) * 40
 					const length = Math.floor(freqData.length / 10)
 					const slice = freqData.slice(0, length - 1)
 					const average = slice.reduce((acc, val) => acc + val, 0) / length
-					let velocity = round((average - 20) / 100, 2)
+					let velocity = round((average - lowThreshold) / 100, 2)
 					if (velocity > 1) return velocity + ((velocity - 1) * sensitivity) + 1
 					else return 1
 				}
