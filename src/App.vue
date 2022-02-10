@@ -1,6 +1,12 @@
 <template>
 	<div class="container" @dblclick="controlsActive = !controlsActive">
-		<visualization :analyzer="analyzer" v-bind="settings" :settings="$options.settings" />
+		<transition name="fade">
+			<visualization v-if="analyzer" :analyzer="analyzer" v-bind="settings" :settings="$options.settings" />
+			<div class="prompt" v-else>
+				<div>[ space ] to start</div>
+				<div>(( double click )) to toggle settings</div>
+			</div>
+		</transition>
 		<controls v-if="controlsActive" v-model="settings" :settings="$options.settings" @click.native.stop @dblclick.native.stop @reset="resetSettings" />
 	</div>
 </template>
@@ -168,7 +174,14 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 	  -moz-appearance: textfield;
 	}
 
-.button { padding: 7px 10px; display: inline-block; opacity: 0.6; border: 1px solid #fff; border-radius: 100px; cursor: pointer; transition: opacity 0.2s ease; }
-	.button:hover { opacity: 0.9; }
+.button { padding: 7px 10px; display: inline-block; opacity: 0.8; border: 1px solid #fff; background-color: white; cursor: pointer; color: black; transition: opacity 0.2s ease; }
+	.button:hover { opacity: 1 }
 
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+</style>
+
+<style scoped>
+.prompt { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; color: white; font-size: 2vw; }
 </style>
