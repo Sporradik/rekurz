@@ -1,5 +1,8 @@
 # rekurz
 
+![Visualization](https://github.com/Sporradik/rekurz/blob/master/src/assets.png?raw=true)
+
+
 ## Project setup
 ```
 npm install
