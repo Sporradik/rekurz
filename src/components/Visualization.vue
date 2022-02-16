@@ -96,10 +96,21 @@ export default {
 					this.velocity = 1
 					this.center = this.getCenterPointXY()
 					this.hands = {
-						hour: {interval: 60 * 60 * 1000, lengthMultiple: .6, noChildren: true},
-						minute: {interval: 100 * 1333 },
-						second: {interval: 40 * 1000 }
+						root: {interval: 60 * 60 * 1000, lengthMultiple: .6, noChildren: true },
+						a: {interval: 100 * 1333 },
+						b: {interval: 40 * 1000 },
+						y: {interval: 40 * 1000, reverse: true },
+						z: {interval: 100 * 1333, reverse: true },
 					}
+					this.recursiveHands = {}
+					this.forwardHands = {}
+					this.reverseHands = {}
+					Object.entries(this.hands).forEach(([key, hand]) => {
+						if (hand.noChildren) return
+						if (hand.reverse) this.reverseHands[key] = hand
+						else this.forwardHands[key] = hand
+						this.recursiveHands[key] = hand
+					})
 					Object.values(this.hands).forEach(hand => {
 						Object.assign(hand, {
 							x0: this.center.x,
@@ -138,19 +149,24 @@ export default {
 							alphaMod = this.getAlphaMod(freqData, depth, stepSize)
 							alphaModValues[depth] = alphaMod
 						}
-
-						;['second', 'minute'].forEach(name => {
+						const children = Object.keys(parent.reverse ? this.reverseHands :this.forwardHands)
+						children.forEach(key => {
+							let hourHandFactor
+							if (this.hands[key].reverse) hourHandFactor = 2 - (hourHand.rad + ((180 * Math.PI) / 180) % 2)
+							else hourHandFactor = (hourHand.rad + ((180 * Math.PI) / 180)) % 2
+							const rad = parent.rad + this.hands[key].rad - hourHandFactor
 							const line = {
 								x0: parent.x1,
 								y0: parent.y1,
 								x1: 0,
 								y1: 0,
-								rad: parent.rad + this.hands[name].rad - (hourHand.rad + ((180 * Math.PI) / 180)),
+								rad,
 								length: (parent.length || this.lineLength) * this.getLengthReductionFactor(),
 								a: /*(1 - ((depth * (1 / $this.recursion))) - (depth ? 0.05 : 0)) **/ alphaMod,
 								l: depth ? $this.lightness : 100 - (100 - $this.lightness) / 2,
 								h: (depth * (360 / $this.recursion) + Math.floor(this.hueShift)) % 360,
-								depth
+								depth,
+								reverse: parent.reverse
 							}
 							Object.assign(line, this.getEndPointXY(line))
 							this.drawLineSegment(line)
@@ -158,13 +174,13 @@ export default {
 						})
 					}
 
-					Object.values(this.hands).filter(hand => !hand.noChildren).forEach(data => {
+					Object.values(this.recursiveHands).forEach(data => {
 						this.drawRootHand(data)
 						if (!data.noChildren && $this.recursion) drawNextLine(data)
 					})
 				},
 				drawRootHand(data) {
-					data.rad = this.getRootRad(data.interval)
+					data.rad = this.getRootRad(data.interval, data.reverse)
 					Object.assign(data, this.getEndPointXY(data, true))
 					this.drawLineSegment(data)
 				},
@@ -202,8 +218,9 @@ export default {
 					const rect = container.getBoundingClientRect()
 					return {x: rect.left + rect.width / 2, y: rect.top + rect.height / 2}
 				},
-				getRootRad(interval) {
-					const progress = (t / interval) % 1
+				getRootRad(interval, reverse) {
+					let progress = (t / interval) % 1
+					if (reverse) progress = 1 - progress
 					const deg = progress * 360
 					return (deg * Math.PI) / 180
 				},
