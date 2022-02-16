@@ -129,9 +129,7 @@ export default {
 
 					// Draw hour hand
 					const hourHand = Object.values(this.hands).find(hand => hand.noChildren)
-					hourHand.rad = this.getRootRad(hourHand.interval)
-					Object.assign(hourHand, this.getEndPointXY(hourHand, true))
-					this.drawLineSegment(hourHand)
+					this.drawRootHand(hourHand)
 
 					const alphaModValues = []
 					const drawNextLine = (parent, depth = 0) => {
@@ -161,11 +159,14 @@ export default {
 					}
 
 					Object.values(this.hands).filter(hand => !hand.noChildren).forEach(data => {
-						data.rad = this.getRootRad(data.interval)
-						Object.assign(data, this.getEndPointXY(data, true))
-						this.drawLineSegment(data)
+						this.drawRootHand(data)
 						if (!data.noChildren && $this.recursion) drawNextLine(data)
 					})
+				},
+				drawRootHand(data) {
+					data.rad = this.getRootRad(data.interval)
+					Object.assign(data, this.getEndPointXY(data, true))
+					this.drawLineSegment(data)
 				},
 				getAlphaMod(freqData, depth, stepSize) {
 					if (freqData) {
