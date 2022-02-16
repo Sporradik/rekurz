@@ -149,18 +149,16 @@ export default {
 							alphaMod = this.getAlphaMod(freqData, depth, stepSize)
 							alphaModValues[depth] = alphaMod
 						}
+						let hourHandFactor = (hourHand.rad + ((180 * Math.PI) / 180)) % 2
+						if (parent.reverse) hourHandFactor = hourHandFactor * -1
 						const children = Object.keys(parent.reverse ? this.reverseHands :this.forwardHands)
 						children.forEach(key => {
-							let hourHandFactor
-							if (this.hands[key].reverse) hourHandFactor = 2 - (hourHand.rad + ((180 * Math.PI) / 180) % 2)
-							else hourHandFactor = (hourHand.rad + ((180 * Math.PI) / 180)) % 2
-							const rad = parent.rad + this.hands[key].rad - hourHandFactor
 							const line = {
 								x0: parent.x1,
 								y0: parent.y1,
 								x1: 0,
 								y1: 0,
-								rad,
+								rad: parent.rad + this.hands[key].rad - hourHandFactor,
 								length: (parent.length || this.lineLength) * this.getLengthReductionFactor(),
 								a: /*(1 - ((depth * (1 / $this.recursion))) - (depth ? 0.05 : 0)) **/ alphaMod,
 								l: depth ? $this.lightness : 100 - (100 - $this.lightness) / 2,
@@ -182,7 +180,7 @@ export default {
 				drawRootHand(data) {
 					data.rad = this.getRootRad(data.interval, data.reverse)
 					Object.assign(data, this.getEndPointXY(data, true))
-					this.drawLineSegment(data)
+					// this.drawLineSegment(data)
 				},
 				getAlphaMod(freqData, depth, stepSize) {
 					if (freqData) {
