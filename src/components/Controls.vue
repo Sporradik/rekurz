@@ -42,7 +42,7 @@ export default {
 
 
 <style scoped>
- .controls { max-height: 100vh; min-width: 300px; padding: 20px; position: fixed; top: 0; left: 0; user-select: none; background-color: var(--overlay-color); overflow: auto; }
+ .controls { max-height: 100vh; min-width: 300px; padding: 20px; position: fixed; top: 0; left: 0; user-select: none; background-color: var(--overlay-color); overflow: auto; cursor: auto; }
  	.controls h3 { margin-top: 0; }
  	.section { margin-bottom: 20px; }
 		.control { padding: 6px 0; }
