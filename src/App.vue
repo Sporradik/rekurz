@@ -1,5 +1,5 @@
 <template>
-	<div class="container" @dblclick="controlsActive = !controlsActive" :class="{light: lightMode} ">
+	<div class="container" @dblclick="controlsActive = !controlsActive" :class="{light: lightMode, 'show-cursor': mouseMovedRecently} ">
 		<transition name="fade">
 			<visualization v-if="analyzer" :analyzer="analyzer" v-bind="settings" :settings="$options.allSettings" />
 			<div v-else class="prompt">
@@ -65,7 +65,8 @@ export default {
             file: null,
             loaded: false,
 			controlsActive: !!this.getStored('controlsActive'),
-			lightMode: !!this.getStored('lightMode')
+			lightMode: !!this.getStored('lightMode'),
+			mouseMovedRecently: false,
         }
     },
     watch: {
@@ -84,6 +85,7 @@ export default {
 		}
     },
     created() {
+		window.addEventListener('mousemove', this.onMousemove)
         window.addEventListener('keyup', (e) => {
             if (e.code === 'Enter') this.play()
             if (e.code === 'Space') this.mic()
@@ -164,6 +166,11 @@ export default {
 		setStored(key, value) {
 			if (value === false) localStorage.removeItem(key)
 			else localStorage.setItem(key, value)
+		},
+		onMousemove() {
+			this.mouseMovedRecently = true
+			clearTimeout(this.mouseMoveTimeout)
+			this.mouseMoveTimeout = setTimeout(() => this.mouseMovedRecently = false, 1000)
 		}
     }
 }
@@ -176,7 +183,6 @@ html, body, #app, .container {
     width: 100%;
     margin: 0;
 }
-
 
 input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; border: none; color: var(--text-color); text-align: right; font-size: inherit; }
 	input:focus-visible { outline: none; }
@@ -198,7 +204,8 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 </style>
 
 <style scoped>
-.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.5); color: var(--text-color); background-color: var(--bg-color); }
+.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.5); color: var(--text-color); background-color: var(--bg-color); cursor: none; }
+	.container.show-cursor { cursor: auto; }
 	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.3); }
 .prompt { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: 2vw; cursor: pointer; user-select: none; }
 	.prompt > div { cursor: pointer; opacity: 0.8; transition: opacity 0.2s ease; }
