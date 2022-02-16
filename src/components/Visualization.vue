@@ -73,7 +73,6 @@ export default {
 			const { min = 0, max = 100 } = this.settings[name]
 			return round(invlerp(min, max, this[name]), 3)
 		},
-
 		createSketch() {
 			const $this = this
 			const container = this.$refs['canvas-container']
@@ -97,7 +96,7 @@ export default {
 					this.velocity = 1
 					this.center = this.getCenterPointXY()
 					this.hands = {
-						hour: {interval: 60 * 60 * 1000, length: 100, noChildren: true},
+						hour: {interval: 60 * 60 * 1000, lengthMultiple: .6, noChildren: true},
 						minute: {interval: 100 * 1333 },
 						second: {interval: 40 * 1000 }
 					}
@@ -128,6 +127,12 @@ export default {
 					if (this.lowFreqIntensity > this.velocity) this.velocity = this.lowFreqIntensity
 					else this.velocity = round(lerp(this.lowFreqIntensity, this.velocity, 0.95), 2)
 
+					// Draw hour hand
+					const hourHand = Object.values(this.hands).find(hand => hand.noChildren)
+					hourHand.rad = this.getRootRad(hourHand.interval)
+					Object.assign(hourHand, this.getEndPointXY(hourHand, true))
+					this.drawLineSegment(hourHand)
+
 					const alphaModValues = []
 					const drawNextLine = (parent, depth = 0) => {
 						let alphaMod = alphaModValues[depth]
@@ -142,7 +147,7 @@ export default {
 								y0: parent.y1,
 								x1: 0,
 								y1: 0,
-								rad: parent.rad + this.hands[name].rad,
+								rad: parent.rad + this.hands[name].rad - (hourHand.rad + ((180 * Math.PI) / 180)),
 								length: (parent.length || this.lineLength) * this.getLengthReductionFactor(),
 								a: /*(1 - ((depth * (1 / $this.recursion))) - (depth ? 0.05 : 0)) **/ alphaMod,
 								l: depth ? $this.lightness : 100 - (100 - $this.lightness) / 2,
@@ -155,7 +160,7 @@ export default {
 						})
 					}
 
-					Object.values(this.hands).forEach(data => {
+					Object.values(this.hands).filter(hand => !hand.noChildren).forEach(data => {
 						data.rad = this.getRootRad(data.interval)
 						Object.assign(data, this.getEndPointXY(data, true))
 						this.drawLineSegment(data)
@@ -202,7 +207,7 @@ export default {
 					return (deg * Math.PI) / 180
 				},
 				getEndPointXY(hand) {
-					const length = hand.length || this.lineLength
+					const length = (hand.lengthMultiple || 1) * this.lineLength
 					const oppositeLength = Math.sin(hand.rad) * length
 					const adjacentLength = Math.cos(hand.rad) * length
 					const x1 = hand.x0 + oppositeLength
