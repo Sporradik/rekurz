@@ -91,16 +91,18 @@ export default {
 					return round(Math.min((this.height, this.width) / 5) * ($this.decimalScale * 2))
 				},
 				setup() {
+					this.osc = new OffscreenCanvas(this.height, this.width)
+					this.octx = this.osc.getContext("2d")
 					this.lineLength = this.getLineLength()
 					this.hueShift = $this.hue
 					this.velocity = 1
 					this.center = this.getCenterPointXY()
 					this.hands = {
 						root: {interval: 60 * 60 * 1000, lengthMultiple: .6, noChildren: true },
-						a: {interval: 100 * 1333 },
-						b: {interval: 40 * 1000 },
-						y: {interval: 40 * 1000, reverse: true },
-						z: {interval: 100 * 1333, reverse: true },
+						a: {interval: 1000 * 1333 },
+						b: {interval: 400 * 1000 },
+						// y: {interval: 400 * 1000, reverse: true },
+						// z: {interval: 1000 * 1333, reverse: true },
 					}
 					this.recursiveHands = {}
 					this.forwardHands = {}
@@ -167,7 +169,7 @@ export default {
 								reverse: parent.reverse
 							}
 							Object.assign(line, this.getEndPointXY(line))
-							this.drawLineSegment(line)
+							this.drawLine(line)
 							if (depth < $this.recursion) drawNextLine(line, depth + 1)
 						})
 					}
@@ -176,11 +178,12 @@ export default {
 						this.drawRootHand(data)
 						if (!data.noChildren && $this.recursion) drawNextLine(data)
 					})
+					this.drawImage(this.osc, 0, 0)
 				},
 				drawRootHand(data) {
 					data.rad = this.getRootRad(data.interval, data.reverse)
 					Object.assign(data, this.getEndPointXY(data, true))
-					// this.drawLineSegment(data)
+					// this.drawLine(data)
 				},
 				getAlphaMod(freqData, depth, stepSize) {
 					if (freqData) {
@@ -199,14 +202,14 @@ export default {
 					}
 					return 0
 				},
-				drawLineSegment({x0, y0, x1, y1, h = 0, l = 100, a = 1, depth}) {
-					this.globalCompositeOperation = depth ? 'destination-under' : 'destination-over'
-					this.beginPath()
-					this.moveTo(x0, y0)
-					this.lineTo(x1, y1)
-					this.lineWidth = $this.thickness
-					this.strokeStyle = `HSLA(${h}, 100%, ${l}%, ${a})`
-					this.stroke()
+				drawLine({x0, y0, x1, y1, h = 0, l = 100, a = 1, depth}) {
+					this.octx.globalCompositeOperation = depth ? 'destination-under' : 'destination-over'
+					this.octx.beginPath()
+					this.octx.moveTo(x0, y0)
+					this.octx.lineTo(x1, y1)
+					this.octx.lineWidth = $this.thickness
+					this.octx.strokeStyle = `HSLA(${h}, 100%, ${l}%, ${a})`
+					this.octx.stroke()
 				},
 				getLengthReductionFactor() {
 					// Generates a number between 0.75 and 0.95 that changes smoothly over time
