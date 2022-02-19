@@ -23,6 +23,8 @@
 import Visualization from './components/Visualization.vue'
 import Controls from './components/Controls'
 
+// {"hue":360,"hueShiftSpeed":0,"recursion":8,"lightness":53,"globalSpeed":3,"minHighFreqOpacity":0.06,"highFreqOpacityReduction":6,"lowFreqDampening":72,"scale":28,"thickness":0,"lowFreqSensitivity":66,"lowFreqThreshold":29,"smoothing":0.84,"dbThreshold":0}
+
 const settings = {
 	visual: {
 		hue: {min: 0, max: 360, default: 300},
