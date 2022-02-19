@@ -239,7 +239,6 @@ export default {
 					return dataArray
 				},
 				getLowFreqIntensity(freqData) {
-					// need interpolation
 					const sensitivity = $this.decimalLowFreqSensitivity * 600
 					const lowThreshold = (($this.decimalLowFreqThreshold * -1) + 1) * 40
 					const length = Math.floor(freqData.length / 10)
