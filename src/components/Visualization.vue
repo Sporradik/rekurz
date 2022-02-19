@@ -7,7 +7,7 @@
 import Sketch from 'sketch-js'
 import {getRandomInt, round, lerp, invlerp} from '@/utils'
 
-let t = getRandomInt(100000000)
+
 
 export default {
     name: 'Visualization',
@@ -84,34 +84,15 @@ export default {
 				autopause: false,
 				autostart: false,
 				resize() {
-					this.setup()
+					this.setCenter()
 					this.lineLength = this.getLineLength()
 				},
 				getLineLength() {
 					return round(Math.min((this.height, this.width) / 5) * ($this.decimalScale * 2))
 				},
-				setup() {
-					this.lineLength = this.getLineLength()
-					this.hueShift = $this.hue
-					this.velocity = 1
+				setCenter() {
 					this.center = this.getCenterPointXY()
-					this.hands = {
-						root: {interval: 60 * 60 * 1000, lengthMultiple: .6, noChildren: true },
-						a: {interval: 100 * 1333 },
-						b: {interval: 40 * 1000 },
-						y: {interval: 40 * 1000, reverse: true },
-						z: {interval: 100 * 1333, reverse: true },
-					}
-					this.recursiveHands = {}
-					this.forwardHands = {}
-					this.reverseHands = {}
-					Object.entries(this.hands).forEach(([key, hand]) => {
-						if (hand.noChildren) return
-						if (hand.reverse) this.reverseHands[key] = hand
-						else this.forwardHands[key] = hand
-						this.recursiveHands[key] = hand
-					})
-					Object.values(this.hands).forEach(hand => {
+						Object.values(this.hands).forEach(hand => {
 						Object.assign(hand, {
 							x0: this.center.x,
 							y0: this.center.y,
@@ -121,6 +102,37 @@ export default {
 						})
 					})
 				},
+				setup() {
+					this.bands = [
+						{sensitivity: 0.5, threshold: 0.5, interval: 1000000, cooldown: 0.95 },
+						{sensitivity: 1, threshold: 3, interval: 700000, cooldown: 0.9 },
+						{sensitivity: 1, threshold: 3, interval: 200000, cooldown: 0.9 },
+					]
+					this.bandCount = Object.keys(this.bands).length
+					this.t = Array.from(Array(this.bandCount)).map(() => getRandomInt(100000000)) // time
+					this.v = Array.from(Array(this.bandCount)).map(() => 1) // velocity
+					this.i = Array.from(Array(this.bandCount))// intensity
+					this.lineLength = this.getLineLength()
+					this.hueShift = $this.hue
+					this.hands = {
+						root: { band: 0, lengthMultiple: .6, noChildren: true },
+						a: { band: 1 },
+						b: { band: 2 },
+						y: { band: 2, reverse: true },
+						z: { band: 1, reverse: true },
+					}
+					Object.values(this.hands).forEach(hand => hand.interval = this.bands[hand.band].interval)
+					this.recursiveHands = {}
+					this.forwardHands = {}
+					this.reverseHands = {}
+					Object.entries(this.hands).forEach(([key, hand]) => {
+						if (hand.noChildren) return
+						if (hand.reverse) this.reverseHands[key] = hand
+						else this.forwardHands[key] = hand
+						this.recursiveHands[key] = hand
+					})
+					this.setCenter()
+				},
 				draw() {
 					// get stream frequency data
 					const freqData = Array.from(this.getByteFrequencyData())
@@ -129,14 +141,17 @@ export default {
 					const stepSize = Math.floor(freqData.length / $this.recursion)
 
 					// shift values
-					t = Math.round(t + this.velocity * ($this.decimalGlobalSpeed * 2))
-					this.lowFreqIntensity = this.getLowFreqIntensity(freqData)
+					this.t.forEach((t, band) => {
+						this.t[band] = Math.round(t + this.v[band] * ($this.decimalGlobalSpeed * 2))
+						this.i[band] = this.getFreqIntensity(freqData, band)
+						// speed up fast, slow down slow
+						if (this.i[band] > this.v[band]) this.v[band] = this.i[band]
+						else this.v[band] = round(lerp(this.i[band], this.v[band], this.bands[band].cooldown), 2)
+					})
+					// console.log('this.t, this.v, this.i', this.t, this.v, this.i)
+
 					this.hueShift = Math.round((this.hueShift + $this.hueShiftSpeed / 10 ) * 100) / 100
 					if (this.hueShift > 360) this.hueShift = 0
-
-					// speed up fase, slow down slow
-					if (this.lowFreqIntensity > this.velocity) this.velocity = this.lowFreqIntensity
-					else this.velocity = round(lerp(this.lowFreqIntensity, this.velocity, 0.95), 2)
 
 					// Draw hour hand
 					const hourHand = Object.values(this.hands).find(hand => hand.noChildren)
@@ -178,7 +193,7 @@ export default {
 					})
 				},
 				drawRootHand(data) {
-					data.rad = this.getRootRad(data.interval, data.reverse)
+					data.rad = this.getRootRad(data.interval, data.band, data.reverse)
 					Object.assign(data, this.getEndPointXY(data, true))
 					// this.drawLineSegment(data)
 				},
@@ -193,7 +208,7 @@ export default {
 						const frequencyMod = ($this.decimalHighFreqOpacityReduction * 0.02) * curve
 						const frequencyBasedOpacity = round((((average / 255) - (frequencyMod)) + $this.minHighFreqOpacity), 2)
 						if (depth < 6) {
-							return round(lerp(this.lowFreqIntensity / ($this.decimalLowFreqDampening * 600), frequencyBasedOpacity, depth * 0.1), 3)
+							return round(lerp(this.i[0] / ($this.decimalLowFreqDampening * 600), frequencyBasedOpacity, depth * 0.1), 3)
 						}
 						return frequencyBasedOpacity
 					}
@@ -210,14 +225,14 @@ export default {
 				},
 				getLengthReductionFactor() {
 					// Generates a number between 0.75 and 0.95 that changes smoothly over time
-					return Math.round((Math.sin(t / 100000) / 10 + 0.85) * 1000) / 1000
+					return Math.round((Math.sin(this.t0 / 100000) / 10 + 0.85) * 1000) / 1000
 				},
 				getCenterPointXY() {
 					const rect = container.getBoundingClientRect()
 					return {x: rect.left + rect.width / 2, y: rect.top + rect.height / 2}
 				},
-				getRootRad(interval, reverse) {
-					let progress = (t / interval) % 1
+				getRootRad(interval, band, reverse) {
+					let progress = (this.t[band] / interval) % 1
 					if (reverse) progress = 1 - progress
 					const deg = progress * 360
 					return (deg * Math.PI) / 180
@@ -238,11 +253,21 @@ export default {
 					analyzer.getByteFrequencyData(dataArray)
 					return dataArray
 				},
-				getLowFreqIntensity(freqData) {
-					const sensitivity = $this.decimalLowFreqSensitivity * 600
-					const lowThreshold = (($this.decimalLowFreqThreshold * -1) + 1) * 40
-					const length = Math.floor(freqData.length / 10)
-					const slice = freqData.slice(0, length - 1)
+				// getLowFreqIntensity(freqData) {
+				// 	const sensitivity = $this.decimalLowFreqSensitivity * 600
+				// 	const lowThreshold = (($this.decimalLowFreqThreshold * -1) + 1) * 40
+				// 	const length = Math.floor(freqData.length / 10)
+				// 	const slice = freqData.slice(0, length - 1)
+				// 	const average = slice.reduce((acc, val) => acc + val, 0) / length
+				// 	let velocity = round((average - lowThreshold) / 100, 2)
+				// 	if (velocity > 1) return velocity + ((velocity - 1) * sensitivity) + 1
+				// 	else return 1
+				// },
+				getFreqIntensity(freqData, band) {
+					const sensitivity = this.bands[band].sensitivity * 600
+					const lowThreshold = ((this.bands[band].threshold * -1) + 1) * 40
+					const length = Math.floor(freqData.length / this.bandCount)
+					const slice = freqData.slice(length * band, (length * (band + 1)) - 1)
 					const average = slice.reduce((acc, val) => acc + val, 0) / length
 					let velocity = round((average - lowThreshold) / 100, 2)
 					if (velocity > 1) return velocity + ((velocity - 1) * sensitivity) + 1
