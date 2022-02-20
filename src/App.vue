@@ -92,6 +92,9 @@ export default {
             if (e.code === 'Enter') this.play()
             if (e.code === 'Space') this.mic()
         })
+		window.addEventListener('storage', e => {
+			if (e.key === 'settings') this.settings = JSON.parse(e.newValue)
+		})
         if (!this.file) this.load()
     },
     methods: {
@@ -160,7 +163,7 @@ export default {
 			this.settings = this.getStoredSettings()
 		},
 		saveSettings(settings) {
-			localStorage.setObject('settings', settings)
+			if (document.hasFocus()) localStorage.setObject('settings', settings)
 		},
 		getStored(key) {
 			return localStorage.getItem(key)
