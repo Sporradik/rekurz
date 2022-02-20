@@ -61,7 +61,10 @@ export default {
 		},
 		decimalScale() {
 			this.sketch.lineLength = this.sketch.getLineLength()
-		}
+		},
+		recursion() {
+			this.sketch.getOffscreenCanvases()
+		},
     },
     mounted() {
 		if (window.sketch) window.sketch.destroy()
@@ -89,12 +92,15 @@ export default {
 				getLineLength() {
 					return round(Math.min((this.height, this.width) / 5) * ($this.decimalScale * 2))
 				},
-				setup() {
+				getOffscreenCanvases() {
 					this.osc = Array.from(new Array($this.recursion + 1)).map(() => {
 						const canvas = new OffscreenCanvas(this.width, this.height)
 						return { canvas, ctx: canvas.getContext("2d") }
 					})
 					this.oscReverse =  [...this.osc].reverse()
+				},
+				setup() {
+					this.getOffscreenCanvases()
 					this.lineLength = this.getLineLength()
 					this.hueShift = $this.hue
 					this.velocity = 1
