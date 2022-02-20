@@ -106,7 +106,7 @@ export default {
 					this.velocity = 1
 					this.center = this.getCenterPointXY()
 					this.hands = {
-						root: {interval: 60 * 60 * 1000, lengthMultiple: .6, noChildren: true },
+						root: {interval: 600 * 60 * 1000, lengthMultiple: .6, noChildren: true },
 						a: {interval: 1000 * 1333 },
 						b: {interval: 400 * 1000 },
 						// y: {interval: 400 * 1000, reverse: true },
