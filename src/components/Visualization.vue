@@ -220,12 +220,20 @@ export default {
 					return 0
 				},
 				drawLine(ctx, {x0, y0, x1, y1, h = 0, l = 100, a = 1, depth}) {
+					const hsla = `HSLA(${h}, 100%, ${l}%, ${a})`
+					if (depth === $this.recursion) {
+						const grad = ctx.createLinearGradient(x0, y0, x1, y1);
+						grad.addColorStop(0, hsla);
+						grad.addColorStop(1, `HSLA(${h}, 100%, ${l}%, 0)`);
+						ctx.strokeStyle = grad
+					} else {
+						ctx.strokeStyle = hsla
+					}
 					ctx.globalCompositeOperation = depth ? 'destination-under' : 'destination-over'
 					ctx.beginPath()
 					ctx.moveTo(x0, y0)
 					ctx.lineTo(x1, y1)
 					ctx.lineWidth = $this.thickness
-					ctx.strokeStyle = `HSLA(${h}, 100%, ${l}%, ${a})`
 					ctx.stroke()
 				},
 				getLengthReductionFactor() {
