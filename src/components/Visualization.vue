@@ -80,7 +80,6 @@ export default {
 				container,
 				height: container.clientHeight,
 				width: container.clientWidth,
-				// interval: 100,
 				autopause: false,
 				autostart: false,
 				resize() {
@@ -91,7 +90,7 @@ export default {
 					return round(Math.min((this.height, this.width) / 5) * ($this.decimalScale * 2))
 				},
 				setup() {
-					this.osc = new OffscreenCanvas(this.height, this.width)
+					this.osc = new OffscreenCanvas(this.width, this.height)
 					this.octx = this.osc.getContext("2d")
 					this.lineLength = this.getLineLength()
 					this.hueShift = $this.hue
@@ -124,6 +123,7 @@ export default {
 					})
 				},
 				draw() {
+					this.octx.clearRect(0, 0, this.width, this.height)
 					// get stream frequency data
 					const freqData = Array.from(this.getByteFrequencyData())
 					const trimHighsIndex = round(freqData.length / 11)
@@ -179,6 +179,10 @@ export default {
 						if (!data.noChildren && $this.recursion) drawNextLine(data)
 					})
 					this.drawImage(this.osc, 0, 0)
+					this.translate(this.width, 0)
+					this.scale(-1, 1)
+					this.drawImage(this.osc, 0, 0)
+
 				},
 				drawRootHand(data) {
 					data.rad = this.getRootRad(data.interval, data.reverse)
