@@ -260,8 +260,8 @@ export default {
 					// sin + tan => vertical beam
 					// sin + atan -> hourglass
 					const length = (hand.lengthMultiple || 1) * this.lineLength
-					const oppositeLength = Math.sin(hand.rad) * length
-					const adjacentLength = Math.cos(hand.rad) * length
+					const oppositeLength = Math.tan(hand.rad) * length
+					const adjacentLength = Math.sin(hand.rad) * length
 					const x1 = hand.x0 + oppositeLength
 					const y1 = hand.y0 - adjacentLength
 					return {x1, y1}
