@@ -90,8 +90,11 @@ export default {
 					return round(Math.min((this.height, this.width) / 5) * ($this.decimalScale * 2))
 				},
 				setup() {
-					this.osc = new OffscreenCanvas(this.width, this.height)
-					this.octx = this.osc.getContext("2d")
+					this.osc = Array.from(new Array($this.recursion + 1)).map(() => {
+						const canvas = new OffscreenCanvas(this.width, this.height)
+						return { canvas, ctx: canvas.getContext("2d") }
+					})
+					this.oscReverse =  [...this.osc].reverse()
 					this.lineLength = this.getLineLength()
 					this.hueShift = $this.hue
 					this.velocity = 1
@@ -123,7 +126,7 @@ export default {
 					})
 				},
 				draw() {
-					this.octx.clearRect(0, 0, this.width, this.height)
+					this.osc.forEach(osc => osc.ctx.clearRect(0, 0, this.width, this.height))
 					// get stream frequency data
 					const freqData = Array.from(this.getByteFrequencyData())
 					const trimHighsIndex = round(freqData.length / 11)
@@ -169,7 +172,7 @@ export default {
 								reverse: parent.reverse
 							}
 							Object.assign(line, this.getEndPointXY(line))
-							this.drawLine(line)
+							this.drawLine(this.osc[depth].ctx, line)
 							if (depth < $this.recursion) drawNextLine(line, depth + 1)
 						})
 					}
@@ -178,10 +181,14 @@ export default {
 						this.drawRootHand(data)
 						if (!data.noChildren && $this.recursion) drawNextLine(data)
 					})
-					this.drawImage(this.osc, 0, 0)
-					this.translate(this.width, 0)
-					this.scale(-1, 1)
-					this.drawImage(this.osc, 0, 0)
+					this.oscReverse.forEach(({canvas}) => {
+						this.drawImage(canvas, 0, 0)
+						this.translate(this.width, 0)
+						this.scale(-1, 1)
+						this.drawImage(canvas, 0, 0)
+						this.translate(this.width, 0)
+						this.scale(-1, 1)
+					})
 
 				},
 				drawRootHand(data) {
@@ -206,14 +213,14 @@ export default {
 					}
 					return 0
 				},
-				drawLine({x0, y0, x1, y1, h = 0, l = 100, a = 1, depth}) {
-					this.octx.globalCompositeOperation = depth ? 'destination-under' : 'destination-over'
-					this.octx.beginPath()
-					this.octx.moveTo(x0, y0)
-					this.octx.lineTo(x1, y1)
-					this.octx.lineWidth = $this.thickness
-					this.octx.strokeStyle = `HSLA(${h}, 100%, ${l}%, ${a})`
-					this.octx.stroke()
+				drawLine(ctx, {x0, y0, x1, y1, h = 0, l = 100, a = 1, depth}) {
+					ctx.globalCompositeOperation = depth ? 'destination-under' : 'destination-over'
+					ctx.beginPath()
+					ctx.moveTo(x0, y0)
+					ctx.lineTo(x1, y1)
+					ctx.lineWidth = $this.thickness
+					ctx.strokeStyle = `HSLA(${h}, 100%, ${l}%, ${a})`
+					ctx.stroke()
 				},
 				getLengthReductionFactor() {
 					// Generates a number between 0.75 and 0.95 that changes smoothly over time
