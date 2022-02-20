@@ -188,19 +188,22 @@ export default {
 						if (!data.noChildren && $this.recursion) drawNextLine(data)
 					})
 					this.oscReverse.forEach(({canvas}) => {
+						const yflip = false
 						this.drawImage(canvas, 0, 0)
-						this.translate(this.width, 0)
-						this.scale(-1, 1)
+						this.flipXY(yflip)
 						this.drawImage(canvas, 0, 0)
-						this.translate(this.width, 0)
-						this.scale(-1, 1)
+						this.flipXY(yflip)
 					})
 
+				},
+				flipXY(y) {
+					this.translate(this.width, y ? this.height : 0)
+					this.scale(-1, y ? -1 : 1)
 				},
 				drawRootHand(data) {
 					data.rad = this.getRootRad(data.interval, data.reverse)
 					Object.assign(data, this.getEndPointXY(data, true))
-					// this.drawLine(data)
+					// this.drawLine(this.osc[0].ctx, data)
 				},
 				getAlphaMod(freqData, depth, stepSize) {
 					if (freqData) {
@@ -221,7 +224,7 @@ export default {
 				},
 				drawLine(ctx, {x0, y0, x1, y1, h = 0, l = 100, a = 1, depth}) {
 					const hsla = `HSLA(${h}, 100%, ${l}%, ${a})`
-					// if (depth === $this.recursion) {
+					// if (depth === $this.recursion || true) {
 					// 	const grad = ctx.createLinearGradient(x0, y0, x1, y1);
 					// 	grad.addColorStop(0, hsla);
 					// 	grad.addColorStop(1, `HSLA(${h}, 100%, ${l}%, 0)`);
@@ -251,6 +254,11 @@ export default {
 					return (deg * Math.PI) / 180
 				},
 				getEndPointXY(hand) {
+					// sin + cos -> clock
+					// tan + cos -> horizontal beam
+					// tan + sin => horizontal beam
+					// sin + tan => vertical beam
+					// sin + atan -> hourglass
 					const length = (hand.lengthMultiple || 1) * this.lineLength
 					const oppositeLength = Math.sin(hand.rad) * length
 					const adjacentLength = Math.cos(hand.rad) * length
