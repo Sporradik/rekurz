@@ -80,7 +80,7 @@ export default {
 			const $this = this
 			const container = this.$refs['canvas-container']
 			this.sketch = window.sketch = Sketch.create({
-				ofcYOverflow: 0.2,
+				ofcYOverflow: 0.1, // adds extra vertical size to the offscreen canvas to compensate for centering (ensures edge of ofc does not enter into the main canvas)
 				container,
 				height: container.clientHeight,
 				width: container.clientWidth,
