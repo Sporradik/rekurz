@@ -96,11 +96,11 @@ export default {
 					this.velocity = 1
 					this.center = this.getCenterPointXY()
 					this.hands = {
-						root: {interval: 60 * 60 * 1000, lengthMultiple: .6, noChildren: true },
-						a: {interval: 100 * 1333 },
-						b: {interval: 40 * 1000 },
-						y: {interval: 40 * 1000, reverse: true },
-						z: {interval: 100 * 1333, reverse: true },
+						root: {interval: 600 * 60 * 1000, lengthMultiple: .6, noChildren: true },
+						a: {interval: 1000 * 1333 },
+						b: {interval: 400 * 1000 },
+						y: {interval: 400 * 1000, reverse: true },
+						z: {interval: 1000 * 1333, reverse: true },
 					}
 					this.recursiveHands = {}
 					this.forwardHands = {}
