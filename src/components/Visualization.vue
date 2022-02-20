@@ -61,7 +61,10 @@ export default {
 		},
 		decimalScale() {
 			this.sketch.lineLength = this.sketch.getLineLength()
-		}
+		},
+		recursion() {
+			this.sketch.getOffscreenCanvases()
+		},
     },
     mounted() {
 		if (window.sketch) window.sketch.destroy()
@@ -80,7 +83,6 @@ export default {
 				container,
 				height: container.clientHeight,
 				width: container.clientWidth,
-				// interval: 100,
 				autopause: false,
 				autostart: false,
 				resize() {
@@ -90,7 +92,15 @@ export default {
 				getLineLength() {
 					return round(Math.min((this.height, this.width) / 5) * ($this.decimalScale * 2))
 				},
+				getOffscreenCanvases() {
+					this.osc = Array.from(new Array($this.recursion + 1)).map(() => {
+						const canvas = new OffscreenCanvas(this.width, this.height)
+						return { canvas, ctx: canvas.getContext("2d") }
+					})
+					this.oscReverse =  [...this.osc].reverse()
+				},
 				setup() {
+					this.getOffscreenCanvases()
 					this.lineLength = this.getLineLength()
 					this.hueShift = $this.hue
 					this.velocity = 1
@@ -99,8 +109,8 @@ export default {
 						root: {interval: 600 * 60 * 1000, lengthMultiple: .6, noChildren: true },
 						a: {interval: 1000 * 1333 },
 						b: {interval: 400 * 1000 },
-						y: {interval: 400 * 1000, reverse: true },
-						z: {interval: 1000 * 1333, reverse: true },
+						// y: {interval: 400 * 1000, reverse: true },
+						// z: {interval: 1000 * 1333, reverse: true },
 					}
 					this.recursiveHands = {}
 					this.forwardHands = {}
@@ -122,6 +132,7 @@ export default {
 					})
 				},
 				draw() {
+					this.osc.forEach(osc => osc.ctx.clearRect(0, 0, this.width, this.height))
 					// get stream frequency data
 					const freqData = Array.from(this.getByteFrequencyData())
 					const trimHighsIndex = round(freqData.length / 11)
@@ -167,7 +178,7 @@ export default {
 								reverse: parent.reverse
 							}
 							Object.assign(line, this.getEndPointXY(line))
-							this.drawLineSegment(line)
+							this.drawLine(this.osc[depth].ctx, line)
 							if (depth < $this.recursion) drawNextLine(line, depth + 1)
 						})
 					}
@@ -176,11 +187,20 @@ export default {
 						this.drawRootHand(data)
 						if (!data.noChildren && $this.recursion) drawNextLine(data)
 					})
+					this.oscReverse.forEach(({canvas}) => {
+						this.drawImage(canvas, 0, 0)
+						this.translate(this.width, 0)
+						this.scale(-1, 1)
+						this.drawImage(canvas, 0, 0)
+						this.translate(this.width, 0)
+						this.scale(-1, 1)
+					})
+
 				},
 				drawRootHand(data) {
 					data.rad = this.getRootRad(data.interval, data.reverse)
 					Object.assign(data, this.getEndPointXY(data, true))
-					// this.drawLineSegment(data)
+					// this.drawLine(data)
 				},
 				getAlphaMod(freqData, depth, stepSize) {
 					if (freqData) {
@@ -199,14 +219,22 @@ export default {
 					}
 					return 0
 				},
-				drawLineSegment({x0, y0, x1, y1, h = 0, l = 100, a = 1, depth}) {
-					this.globalCompositeOperation = depth ? 'destination-under' : 'destination-over'
-					this.beginPath()
-					this.moveTo(x0, y0)
-					this.lineTo(x1, y1)
-					this.lineWidth = $this.thickness
-					this.strokeStyle = `HSLA(${h}, 100%, ${l}%, ${a})`
-					this.stroke()
+				drawLine(ctx, {x0, y0, x1, y1, h = 0, l = 100, a = 1, depth}) {
+					const hsla = `HSLA(${h}, 100%, ${l}%, ${a})`
+					// if (depth === $this.recursion) {
+					// 	const grad = ctx.createLinearGradient(x0, y0, x1, y1);
+					// 	grad.addColorStop(0, hsla);
+					// 	grad.addColorStop(1, `HSLA(${h}, 100%, ${l}%, 0)`);
+					// 	ctx.strokeStyle = grad
+					// } else {
+						ctx.strokeStyle = hsla
+					// }
+					ctx.globalCompositeOperation = depth ? 'destination-under' : 'destination-over'
+					ctx.beginPath()
+					ctx.moveTo(x0, y0)
+					ctx.lineTo(x1, y1)
+					ctx.lineWidth = $this.thickness
+					ctx.stroke()
 				},
 				getLengthReductionFactor() {
 					// Generates a number between 0.75 and 0.95 that changes smoothly over time
