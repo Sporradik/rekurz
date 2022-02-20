@@ -80,6 +80,7 @@ export default {
 			const $this = this
 			const container = this.$refs['canvas-container']
 			this.sketch = window.sketch = Sketch.create({
+				ofcYOverflow: 0.2,
 				container,
 				height: container.clientHeight,
 				width: container.clientWidth,
@@ -93,11 +94,16 @@ export default {
 					return round(Math.min((this.height, this.width) / 5) * ($this.decimalScale * 2))
 				},
 				getOffscreenCanvases() {
+					this.ofcOffset = Math.floor(this.height * this.ofcYOverflow)
+					this.ofcHeight = Math.floor(this.height + (this.ofcOffset * 2))
 					this.osc = Array.from(new Array($this.recursion + 1)).map(() => {
-						const canvas = new OffscreenCanvas(this.width, this.height)
+						const canvas = new OffscreenCanvas(this.width, this.ofcHeight)
 						return { canvas, ctx: canvas.getContext("2d") }
 					})
 					this.oscReverse =  [...this.osc].reverse()
+				},
+				resetBoundaryPoints() {
+					this.highestY = this.lowestY = null
 				},
 				setup() {
 					this.getOffscreenCanvases()
@@ -132,7 +138,8 @@ export default {
 					})
 				},
 				draw() {
-					this.osc.forEach(osc => osc.ctx.clearRect(0, 0, this.width, this.height))
+					this.resetBoundaryPoints()
+					this.osc.forEach(osc => osc.ctx.clearRect(0, 0, this.width, this.ofcHeight))
 					// get stream frequency data
 					const freqData = Array.from(this.getByteFrequencyData())
 					const trimHighsIndex = round(freqData.length / 11)
@@ -187,15 +194,19 @@ export default {
 						this.drawRootHand(data)
 						if (!data.noChildren && $this.recursion) drawNextLine(data)
 					})
+
+					// center image y
+					const midY = this.ofcHeight / 2
+					const shift = round((((midY - this.highestY) - (this.lowestY - midY)) / 2) - this.ofcOffset, 3)
+
 					this.oscReverse.forEach(({canvas}) => {
-						this.drawImage(canvas, 0, 0)
+						this.drawImage(canvas, 0, shift)
 						this.translate(this.width, 0)
 						this.scale(-1, 1)
-						this.drawImage(canvas, 0, 0)
+						this.drawImage(canvas, 0, shift)
 						this.translate(this.width, 0)
 						this.scale(-1, 1)
 					})
-
 				},
 				drawRootHand(data) {
 					data.rad = this.getRootRad(data.interval, data.reverse)
@@ -241,8 +252,7 @@ export default {
 					return Math.round((Math.sin(t / 100000) / 10 + 0.85) * 1000) / 1000
 				},
 				getCenterPointXY() {
-					const rect = container.getBoundingClientRect()
-					return {x: rect.left + rect.width / 2, y: rect.top + rect.height / 2}
+					return {x: 0 + this.width / 2, y: 0 + this.ofcHeight / 2}
 				},
 				getRootRad(interval, reverse) {
 					let progress = (t / interval) % 1
@@ -256,6 +266,8 @@ export default {
 					const adjacentLength = Math.cos(hand.rad) * length
 					const x1 = hand.x0 + oppositeLength
 					const y1 = hand.y0 - adjacentLength
+					if (y1 < this.highestY || this.highestY === null) this.highestY = round(y1, 3)
+					if (y1 > this.lowestY || this.lowestY === null) this.lowestY = round(y1, 3)
 					return {x1, y1}
 				},
 				getByteFrequencyData() {
