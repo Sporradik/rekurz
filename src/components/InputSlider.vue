@@ -17,7 +17,7 @@
 import {invlerp, round} from '@/utils'
 
 export default {
-	name: 'Slider',
+	name: 'InputSlider',
 	knobWidthPx: 20,
 	props: {
 		modelValue: { type: Number, default: 100 },

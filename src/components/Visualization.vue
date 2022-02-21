@@ -25,6 +25,7 @@ export default {
 		lowFreqDampening: { type: Number, required: true },
 		scale: { type: Number, required: true },
 		thickness: { type: Number, required: true },
+		mode: { type: String, default: 'mirror' },
 		settings: { type: Object, required: true },
     },
 	computed: {
@@ -45,6 +46,9 @@ export default {
 		},
 		decimalScale() {
 			return this.parameterToDecimal('scale', true)
+		},
+		double() {
+			return ['mirror', 'spiral'].includes(this.mode)
 		}
 	},
     watch: {
@@ -188,11 +192,13 @@ export default {
 						if (!data.noChildren && $this.recursion) drawNextLine(data)
 					})
 					this.oscReverse.forEach(({canvas}) => {
-						const yflip = false
 						this.drawImage(canvas, 0, 0)
-						this.flipXY(yflip)
-						this.drawImage(canvas, 0, 0)
-						this.flipXY(yflip)
+						if ($this.double) {
+							const flipY = $this.mode === 'spiral'
+							this.flipXY(flipY)
+							this.drawImage(canvas, 0, 0)
+							this.flipXY(flipY)
+						}
 					})
 
 				},
@@ -260,8 +266,8 @@ export default {
 					// sin + tan => vertical beam
 					// sin + atan -> hourglass
 					const length = (hand.lengthMultiple || 1) * this.lineLength
-					const oppositeLength = Math.tan(hand.rad) * length
-					const adjacentLength = Math.sin(hand.rad) * length
+					const oppositeLength = Math.sin(hand.rad) * length
+					const adjacentLength = Math.cos(hand.rad) * length
 					const x1 = hand.x0 + oppositeLength
 					const y1 = hand.y0 - adjacentLength
 					return {x1, y1}

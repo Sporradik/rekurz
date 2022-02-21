@@ -1,5 +1,5 @@
 <template>
-	<div class="container" @dblclick="controlsActive = !controlsActive" :class="{light: lightMode, 'show-cursor': mouseMovedRecently} ">
+	<div class="container" :class="{light: lightMode, 'show-cursor': mouseMovedRecently} " @dblclick="controlsActive = !controlsActive">
 		<transition name="fade">
 			<visualization v-if="analyzer" :analyzer="analyzer" v-bind="settings" :settings="$options.allSettings" />
 			<div v-else class="prompt">
@@ -26,15 +26,28 @@ import Controls from './components/Controls'
 // {"hue":360,"hueShiftSpeed":0,"recursion":8,"lightness":53,"globalSpeed":3,"minHighFreqOpacity":0.06,"highFreqOpacityReduction":6,"lowFreqDampening":72,"scale":28,"thickness":0,"lowFreqSensitivity":66,"lowFreqThreshold":29,"smoothing":0.84,"dbThreshold":0}
 
 const settings = {
-	visual: {
+	color: {
 		hue: {min: 0, max: 360, default: 300},
 		hueShiftSpeed: {default: 0},
-		recursion: {min: 2, max: 10, default: 10,},
 		lightness: {default: 80,},
-		globalSpeed: {default: 50},
 		minHighFreqOpacity: { min: 0, max: 1, default: 0.01},
 		highFreqOpacityReduction: {default: 0.02},
 		lowFreqDampening: {default: 50},
+	},
+	movement: {
+		globalSpeed: {default: 50},
+	},
+	structure: {
+		mode: {
+			type: 'select',
+			options: [
+				{ value: 'single' },
+				{ value: 'mirror' },
+				{ value: 'spiral' },
+			],
+			default: 'mirror'
+		},
+		recursion: {min: 2, max: 10, default: 10,},
 		scale: { default: 50 },
 		thickness: { default: 2, }
 	},
@@ -209,9 +222,9 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 </style>
 
 <style scoped>
-.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.5); color: var(--text-color); background-color: var(--bg-color); cursor: none; }
+.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.5); --gray-overlay-color: rgba(255,255,255, 0.1); color: var(--text-color); background-color: var(--bg-color); cursor: none; }
 	.container.show-cursor { cursor: auto; }
-	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.3); }
+	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.3); --gray-overlay-color: rgba(0,0,0, 0.15); }
 .prompt { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: 2vw; cursor: pointer; user-select: none; }
 	.prompt > div { cursor: pointer; opacity: 0.8; transition: opacity 0.2s ease; }
 	.prompt > div:hover { opacity: 1; }
