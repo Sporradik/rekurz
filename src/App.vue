@@ -16,6 +16,7 @@
 			@dblclick.native.stop
 			@reset="resetSettings"
 		/>
+		<div class="bg"></div>
 	</div>
 </template>
 
@@ -206,6 +207,7 @@ export default {
 </script>
 
 <style>
+
 html, body, #app, .container {
 	font-family: AppleSystemUIFont, "San F", sans-serif;
     height: 100%;
@@ -235,10 +237,11 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 </style>
 
 <style scoped>
-.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.5); --gray-overlay-color: rgba(255,255,255, 0.1);  --gray-overlay-color-hover: rgba(255,255,255, 0.2); color: var(--text-color); background-color: var(--bg-color); cursor: none; }
+.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.5); --gray-overlay-color: rgba(255,255,255, 0.1);  --gray-overlay-color-hover: rgba(255,255,255, 0.2); color: var(--text-color); cursor: none; }
 	.container.show-cursor { cursor: auto; }
 	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.3); --gray-overlay-color: rgba(0,0,0, 0.15); --gray-overlay-color-hover: rgba(0,0,0, 0.2); }
-.prompt { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: 2vw; cursor: pointer; user-select: none; }
+.prompt { position: fixed; z-index: -1; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: 2vw; cursor: pointer; user-select: none; }
 	.prompt > div { cursor: pointer; opacity: 0.8; transition: opacity 0.2s ease; }
 	.prompt > div:hover { opacity: 1; }
+.bg { position: fixed; inset: 0; background-color: var(--bg-color); z-index: -10; }
 </style>

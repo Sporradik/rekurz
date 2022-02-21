@@ -1,5 +1,6 @@
 <template>
 	<div class="controls">
+		<h2>Settings</h2>
 		<div v-for="(controls, name) in settings" :key="name" class="section">
 			<h3>{{ camelCaseToReadable(name) }}</h3>
 			<div v-for="(control, n) in controls" :key="n" class="control">
@@ -44,8 +45,8 @@ export default {
 
 
 <style scoped>
- .controls { max-height: 100vh; min-width: 300px; padding: 20px; position: fixed; top: 0; left: 0; user-select: none; background-color: var(--overlay-color); overflow: auto; cursor: auto; }
- 	.controls h3 { margin-top: 0; }
+ .controls { width: 400px; padding: 20px; user-select: none; background-color: var(--overlay-color); cursor: auto; }
+ 	h2, h3 { margin-top: 0; }
  	.section { margin-bottom: 20px; }
 		label { display: inline-block; margin-bottom: 4px; }
 		.control { padding: 6px 0; }
