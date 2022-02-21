@@ -41,20 +41,20 @@ const settings = {
 		mode: {
 			type: 'select',
 			options: [
-				{ value: 'single' },
-				{ value: 'mirror' },
-				{ value: 'spiral' },
+				{ label: 'Single', value: 'single' },
+				{ label: 'Mirror', value: 'mirror' },
+				{ label: 'Spiral', value: 'spiral' },
 			],
 			default: 'mirror'
 		},
 		formula: {
 			type: 'select',
 			options: [
-				{ label: 'clock', value: ['sin', 'cos']},
-				{ label: 'horizontal beam 1', value: ['tan', 'cos']},
-				{ label: 'horizontal beam 2', value: ['tan', 'sin']},
-				{ label: 'vertical beam', value: ['sin', 'tan']},
-				{ label: 'hourglass', value: ['sin', 'atan']},
+				{ label: 'Clock', value: ['sin', 'cos']},
+				{ label: 'Horizontal beam 1', value: ['tan', 'cos']},
+				{ label: 'Horizontal beam 2', value: ['tan', 'sin']},
+				{ label: 'Vertical beam', value: ['sin', 'tan']},
+				{ label: 'Hourglass', value: ['sin', 'atan']},
 			],
 			default: 'clock'
 		},
@@ -213,6 +213,8 @@ html, body, #app, .container {
     margin: 0;
 }
 
+* { box-sizing: border-box; }
+
 input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; border: none; color: var(--text-color); text-align: right; font-size: inherit; }
 	input:focus-visible { outline: none; }
 	input::-webkit-outer-spin-button,
@@ -224,8 +226,8 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 	  -moz-appearance: textfield;
 	}
 
-.button { padding: 7px 10px; display: inline-block; opacity: 0.8; background-color: var(--text-color); cursor: pointer; color: var(--bg-color); transition: opacity 0.2s ease; }
-	.button:hover { opacity: 1 }
+.button { padding: 7px 10px; display: inline-block; background-color: var(--gray-overlay-color); cursor: pointer; color: var(--text-color); transition: background-color 0.2s ease; }
+	.button:hover { background-color: var(--gray-overlay-color-hover); }
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
@@ -233,9 +235,9 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 </style>
 
 <style scoped>
-.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.5); --gray-overlay-color: rgba(255,255,255, 0.1); color: var(--text-color); background-color: var(--bg-color); cursor: none; }
+.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.5); --gray-overlay-color: rgba(255,255,255, 0.1);  --gray-overlay-color-hover: rgba(255,255,255, 0.2); color: var(--text-color); background-color: var(--bg-color); cursor: none; }
 	.container.show-cursor { cursor: auto; }
-	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.3); --gray-overlay-color: rgba(0,0,0, 0.15); }
+	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.3); --gray-overlay-color: rgba(0,0,0, 0.15); --gray-overlay-color-hover: rgba(0,0,0, 0.2); }
 .prompt { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: 2vw; cursor: pointer; user-select: none; }
 	.prompt > div { cursor: pointer; opacity: 0.8; transition: opacity 0.2s ease; }
 	.prompt > div:hover { opacity: 1; }

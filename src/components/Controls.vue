@@ -10,7 +10,7 @@
 		</div>
 		<div class="buttons">
 			<div class="button" @click="$emit('reset')">Reset All</div>
-			<div class="button" @click="toggleLightMode">{{ lightMode ? 'Light' : 'Dark' }}</div>
+			<div class="button" @click="toggleLightMode">{{ lightMode ? 'Dark' : 'Light' }}</div>
 		</div>
 	</div>
 </template>
