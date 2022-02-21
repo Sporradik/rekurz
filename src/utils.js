@@ -29,3 +29,8 @@ export function arraysEqual(a, b) {
   }
   return true
 }
+
+export function camelCaseToReadable(string) {
+	string = string.replace(/([A-Z])/gm, (match) => ' ' + match.toLowerCase())
+	return string.charAt(0).toUpperCase() + string.slice(1)
+}

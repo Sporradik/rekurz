@@ -51,11 +51,11 @@ const settings = {
 		formula: {
 			type: 'select',
 			options: [
-				{ label: 'Clock', value: ['sin', 'cos']},
-				{ label: 'Horizontal beam 1', value: ['tan', 'cos']},
-				{ label: 'Horizontal beam 2', value: ['tan', 'sin']},
-				{ label: 'Vertical beam', value: ['sin', 'tan']},
-				{ label: 'Hourglass', value: ['sin', 'atan']},
+				{ label: 'Clock - sin / cos', value: ['sin', 'cos']},
+				{ label: 'X beam - tan / cos', value: ['tan', 'cos']},
+				{ label: 'X beam - tan / sin', value: ['tan', 'sin']},
+				{ label: 'Y beam - sin / tan ', value: ['sin', 'tan']},
+				{ label: 'Hourglass - sin / arctan', value: ['sin', 'atan']},
 			],
 			default: 'clock'
 		},
@@ -237,9 +237,9 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 </style>
 
 <style scoped>
-.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.5); --gray-overlay-color: rgba(255,255,255, 0.1);  --gray-overlay-color-hover: rgba(255,255,255, 0.2); color: var(--text-color); cursor: none; }
+.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.6); --gray-overlay-color: rgba(255,255,255, 0.1);  --gray-overlay-color-hover: rgba(255,255,255, 0.2); color: var(--text-color); cursor: none; }
 	.container.show-cursor { cursor: auto; }
-	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.3); --gray-overlay-color: rgba(0,0,0, 0.15); --gray-overlay-color-hover: rgba(0,0,0, 0.2); }
+	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.4); --gray-overlay-color: rgba(0,0,0, 0.15); --gray-overlay-color-hover: rgba(0,0,0, 0.2); }
 .prompt { position: fixed; z-index: -1; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: 2vw; cursor: pointer; user-select: none; }
 	.prompt > div { cursor: pointer; opacity: 0.8; transition: opacity 0.2s ease; }
 	.prompt > div:hover { opacity: 1; }
