@@ -205,9 +205,7 @@ export default {
     }
 }
 </script>
-
 <style>
-
 html, body, #app, .container {
 	font-family: AppleSystemUIFont, "San F", sans-serif;
     height: 100%;
@@ -228,7 +226,7 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 	  -moz-appearance: textfield;
 	}
 
-.button { padding: 7px 10px; display: inline-block; background-color: var(--gray-overlay-color); cursor: pointer; color: var(--text-color); transition: background-color 0.2s ease; }
+.button { padding: 7px 10px; display: inline-block; background-color: var(--gray-overlay-color); cursor: pointer; color: var(--text-color); border-radius: var(--border-radius); transition: background-color 0.2s ease; }
 	.button:hover { background-color: var(--gray-overlay-color-hover); }
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
@@ -237,7 +235,7 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 </style>
 
 <style scoped>
-.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.6); --gray-overlay-color: rgba(255,255,255, 0.1);  --gray-overlay-color-hover: rgba(255,255,255, 0.2); color: var(--text-color); cursor: none; }
+.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.6); --gray-overlay-color: rgba(255,255,255, 0.1);  --gray-overlay-color-hover: rgba(255,255,255, 0.2); color: var(--text-color); --border-radius: 5px; cursor: none; }
 	.container.show-cursor { cursor: auto; }
 	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.4); --gray-overlay-color: rgba(0,0,0, 0.15); --gray-overlay-color-hover: rgba(0,0,0, 0.2); }
 .prompt { position: fixed; z-index: -1; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: 2vw; cursor: pointer; user-select: none; }

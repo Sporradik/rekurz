@@ -35,6 +35,6 @@ export default {
 
 
 <style scoped>
-select { margin: 0; padding: 5px 0; background-color: var(--gray-overlay-color); border: none; border-radius: 5px; color: var(--text-color); font-size: 16px; }
+select { min-width: 200px; margin: 0; padding: 5px 0; background-color: var(--gray-overlay-color); border: none; border-radius: var(--border-radius); color: var(--text-color); font-size: 16px; text-align: center; }
 	select:focus { outline: none; }
 </style>
