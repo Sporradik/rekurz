@@ -1,7 +1,7 @@
 <template>
 	<div class="select">
 		<select v-model="value">
-			<option v-for="option in options" :selected="value === option.value" :value="option.value">{{ option.label || option.value }}</option>
+			<option v-for="option in options" :selected="arraysEqual(value, option.value)" :value="option.value">{{ option.label || option.value }}</option>
 		</select>
 	</div>
 </template>
@@ -9,10 +9,12 @@
 
 
 <script>
+import {arraysEqual} from '@/utils'
+
 export default {
 	name: 'InputSelect',
 	props: {
-		modelValue: { type: String, default: '' },
+		modelValue: { type: [String, Array], default: '' },
 		options: { type: Array, required: true },
 	},
 	emits: ['update:modelValue'],
@@ -25,6 +27,9 @@ export default {
 				this.$emit('update:modelValue', value)
 			}
 		}
+	},
+	methods: {
+		arraysEqual
 	}
 }
 </script>

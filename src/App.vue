@@ -47,6 +47,17 @@ const settings = {
 			],
 			default: 'mirror'
 		},
+		formula: {
+			type: 'select',
+			options: [
+				{ label: 'clock', value: ['sin', 'cos']},
+				{ label: 'horizontal beam 1', value: ['tan', 'cos']},
+				{ label: 'horizontal beam 2', value: ['tan', 'sin']},
+				{ label: 'vertical beam', value: ['sin', 'tan']},
+				{ label: 'hourglass', value: ['sin', 'atan']},
+			],
+			default: 'clock'
+		},
 		recursion: {min: 2, max: 10, default: 10,},
 		scale: { default: 50 },
 		thickness: { default: 2, }

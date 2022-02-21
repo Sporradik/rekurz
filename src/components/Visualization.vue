@@ -26,6 +26,7 @@ export default {
 		scale: { type: Number, required: true },
 		thickness: { type: Number, required: true },
 		mode: { type: String, default: 'mirror' },
+		formula: { type: Array, required: true },
 		settings: { type: Object, required: true },
     },
 	computed: {
@@ -259,15 +260,19 @@ export default {
 					const deg = progress * 360
 					return (deg * Math.PI) / 180
 				},
+				getFormula() {
+
+				},
 				getEndPointXY(hand) {
+
 					// sin + cos -> clock
 					// tan + cos -> horizontal beam
 					// tan + sin => horizontal beam
 					// sin + tan => vertical beam
 					// sin + atan -> hourglass
 					const length = (hand.lengthMultiple || 1) * this.lineLength
-					const oppositeLength = Math.sin(hand.rad) * length
-					const adjacentLength = Math.cos(hand.rad) * length
+					const oppositeLength = Math[$this.formula[0]](hand.rad) * length
+					const adjacentLength = Math[$this.formula[1]](hand.rad) * length
 					const x1 = hand.x0 + oppositeLength
 					const y1 = hand.y0 - adjacentLength
 					return {x1, y1}
