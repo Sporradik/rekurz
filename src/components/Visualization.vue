@@ -84,6 +84,7 @@ export default {
 		createSketch() {
 			const $this = this
 			const container = this.$refs['canvas-container']
+
 			this.sketch = window.sketch = Sketch.create({
 				container,
 				height: container.clientHeight,
@@ -100,11 +101,17 @@ export default {
 				getOffscreenCanvases() {
 					this.osc = Array.from(new Array($this.recursion + 1)).map(() => {
 						const canvas = new OffscreenCanvas(this.width, this.height)
-						return { canvas, ctx: canvas.getContext("2d") }
+						return {
+							canvas,
+							ctx: canvas.getContext("2d"),
+						}
 					})
 					this.oscReverse =  [...this.osc].reverse()
 				},
 				setup() {
+					this.alphaModValues = []
+					this.alphaCanvas = new OffscreenCanvas(this.width, this.height)
+					this.alphaCtx = this.alphaCanvas.getContext('2d')
 					this.getOffscreenCanvases()
 					this.lineLength = this.getLineLength()
 					this.hueShift = $this.hue
@@ -137,7 +144,14 @@ export default {
 					})
 				},
 				draw() {
-					this.osc.forEach(osc => osc.ctx.clearRect(0, 0, this.width, this.height))
+					this.osc.forEach((osc, i) => {
+						this.alphaCtx.clearRect(0,0, this.width, this.height)
+						this.alphaCtx.globalAlpha = this.alphaModValues[i]
+							// round(invlerp(0, 300, this.lowFreqIntensity), 2)
+						this.alphaCtx.drawImage(osc.canvas, 0, 0)
+						osc.ctx.clearRect(0, 0, this.width, this.height)
+						osc.ctx.drawImage(this.alphaCanvas, 0, 0)
+					})
 					// get stream frequency data
 					const freqData = Array.from(this.getByteFrequencyData())
 					const trimHighsIndex = round(freqData.length / 11)
@@ -158,12 +172,12 @@ export default {
 					const hourHand = Object.values(this.hands).find(hand => hand.noChildren)
 					this.drawRootHand(hourHand)
 
-					const alphaModValues = []
+					this.alphaModValues = []
 					const drawNextLine = (parent, depth = 0) => {
-						let alphaMod = alphaModValues[depth]
+						let alphaMod = this.alphaModValues[depth]
 						if (alphaMod === undefined) {
 							alphaMod = this.getAlphaMod(freqData, depth, stepSize)
-							alphaModValues[depth] = alphaMod
+							this.alphaModValues[depth] = alphaMod
 						}
 						let hourHandFactor = (hourHand.rad + ((180 * Math.PI) / 180)) % 2
 						if (parent.reverse) hourHandFactor = hourHandFactor * -1

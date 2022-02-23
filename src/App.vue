@@ -31,15 +31,6 @@ import Controls from './components/Controls'
 // {"hue":330,"hueShiftSpeed":0,"lightness":56,"minHighFreqOpacity":0.01,"highFreqOpacityReduction":94,"lowFreqDampening":50,"globalSpeed":100,"mode":"mirror","formula":["tan","sin"],"recursion":10,"scale":6,"thickness":0,"lowFreqSensitivity":100,"lowFreqThreshold":50,"smoothing":0.4,"dbThreshold":0}
 const settings = {
 	structure: {
-		mode: {
-			type: 'select',
-			options: [
-				{ label: 'Single', value: 'single' },
-				{ label: 'Mirror', value: 'mirror' },
-				{ label: 'Spiral', value: 'spiral' },
-			],
-			default: 'mirror'
-		},
 		formula: {
 			type: 'select',
 			options: [
@@ -50,6 +41,15 @@ const settings = {
 				{ label: 'Hourglass - sin / arctan', value: ['sin', 'atan']},
 			],
 			default: ['sin', 'cos']
+		},
+		mode: {
+			type: 'select',
+			options: [
+				{ label: 'Single', value: 'single' },
+				{ label: 'Mirror', value: 'mirror' },
+				{ label: 'Spiral', value: 'spiral' },
+			],
+			default: 'mirror'
 		},
 		recursion: {min: 2, max: 10, default: 10,},
 		scale: { default: 50 },
