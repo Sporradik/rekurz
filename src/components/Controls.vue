@@ -43,7 +43,7 @@ export default {
 
 
 <style scoped>
- .controls { min-width: 400px; padding: 20px; display: inline-block; user-select: none; background-color: var(--overlay-color); cursor: auto; }
+ .controls { min-width: 400px; padding: 20px; position: absolute; z-index: 10; display: inline-block; user-select: none; background-color: var(--overlay-color); cursor: auto; }
  	h2, h3 { margin-top: 0; }
  	.section { margin-bottom: 20px; }
 		.control { padding: 6px 0; }
@@ -51,7 +51,7 @@ export default {
 			.control.overlay { position: relative; }
 			label { display: inline-block; margin-bottom: 4px; opacity: 0.85; }
 				.overlay label { position: absolute; top: 50%; left: 0; transform: translateY(-50%); pointer-events: none; transition: opacity 0.2s ease; }
-					.overlay:hover label { opacity: 0.2; }
+					.overlay:hover label { opacity: 0.1 }
 					.overlay >>> .slider-control-wrapper { opacity: 0.1; transition: opacity 0.2s ease; }
 						.light .overlay >>> .slider-control-wrapper { opacity: 0.2; }
 					.overlay:hover >>> .slider-control-wrapper { opacity: 1; }

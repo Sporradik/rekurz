@@ -264,7 +264,6 @@ export default {
 
 				},
 				getEndPointXY(hand) {
-
 					// sin + cos -> clock
 					// tan + cos -> horizontal beam
 					// tan + sin => horizontal beam

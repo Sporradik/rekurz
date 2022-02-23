@@ -3,8 +3,11 @@
 		<transition name="fade">
 			<visualization v-if="analyzer" :analyzer="analyzer" v-bind="settings" :settings="$options.allSettings" />
 			<div v-else class="prompt">
-				<div @click="mic">[ space ] to start</div>
-				<div @click="controlsActive = !controlsActive">(( double click anywhere )) to toggle settings</div>
+				<h2>rekurz.</h2>
+				<div class="actions">
+					<div @click="mic"><span>[ space ]</span> <span>start rekurz.</span></div>
+					<div @click="controlsActive = !controlsActive"><span>(( dblclick ))</span> <span>toggle settings</span></div>
+				</div>
 			</div>
 		</transition>
 		<controls
@@ -25,19 +28,8 @@ import Visualization from './components/Visualization.vue'
 import Controls from './components/Controls'
 
 // {"hue":360,"hueShiftSpeed":0,"recursion":8,"lightness":53,"globalSpeed":3,"minHighFreqOpacity":0.06,"highFreqOpacityReduction":6,"lowFreqDampening":72,"scale":28,"thickness":0,"lowFreqSensitivity":66,"lowFreqThreshold":29,"smoothing":0.84,"dbThreshold":0}
-
+// {"hue":330,"hueShiftSpeed":0,"lightness":56,"minHighFreqOpacity":0.01,"highFreqOpacityReduction":94,"lowFreqDampening":50,"globalSpeed":100,"mode":"mirror","formula":["tan","sin"],"recursion":10,"scale":6,"thickness":0,"lowFreqSensitivity":100,"lowFreqThreshold":50,"smoothing":0.4,"dbThreshold":0}
 const settings = {
-	color: {
-		hue: {min: 0, max: 360, default: 300},
-		hueShiftSpeed: {default: 0},
-		lightness: {default: 80,},
-		minHighFreqOpacity: { min: 0, max: 1, default: 0.01},
-		highFreqOpacityReduction: {default: 0.02},
-		lowFreqDampening: {default: 50},
-	},
-	movement: {
-		globalSpeed: {default: 50},
-	},
 	structure: {
 		mode: {
 			type: 'select',
@@ -57,11 +49,22 @@ const settings = {
 				{ label: 'Y beam - sin / tan ', value: ['sin', 'tan']},
 				{ label: 'Hourglass - sin / arctan', value: ['sin', 'atan']},
 			],
-			default: 'clock'
+			default: ['sin', 'cos']
 		},
 		recursion: {min: 2, max: 10, default: 10,},
 		scale: { default: 50 },
 		thickness: { default: 2, }
+	},
+	movement: {
+		globalSpeed: {default: 50},
+	},
+	color: {
+		hue: {min: 0, max: 360, default: 300},
+		hueShiftSpeed: {default: 0},
+		lightness: {default: 80,},
+		minHighFreqOpacity: { min: 0, max: 1, default: 0.01},
+		highFreqOpacityReduction: {default: 0.02},
+		lowFreqDampening: {default: 50},
 	},
 	calibration: {
 		lowFreqSensitivity: {default: 50},
@@ -238,8 +241,10 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 .container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.6); --gray-overlay-color: rgba(255,255,255, 0.1);  --gray-overlay-color-hover: rgba(255,255,255, 0.2); color: var(--text-color); --border-radius: 5px; cursor: none; }
 	.container.show-cursor { cursor: auto; }
 	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.4); --gray-overlay-color: rgba(0,0,0, 0.15); --gray-overlay-color-hover: rgba(0,0,0, 0.2); }
-.prompt { position: fixed; z-index: -1; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: 2vw; cursor: pointer; user-select: none; }
-	.prompt > div { cursor: pointer; opacity: 0.8; transition: opacity 0.2s ease; }
-	.prompt > div:hover { opacity: 1; }
+.prompt { position: fixed; z-index: 0; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: calc(12px + 1vw); user-select: none; }
+	.prompt h2 { font-size: calc(20px + 2.5vw); }
+	.actions { display: flex; flex-direction: column; gap: 20px; }
+	.actions > div { display: inline-flex; justify-content: space-around; gap: calc(20px + 1vw); cursor: pointer; opacity: 0.8; transition: opacity 0.2s ease; }
+		.actions > div:hover { opacity: 1; }
 .bg { position: fixed; inset: 0; background-color: var(--bg-color); z-index: -10; }
 </style>
