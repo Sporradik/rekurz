@@ -113,8 +113,12 @@ export default {
 			handler: 'saveSettings',
 			deep: true,
 		},
-		'settings.dbThreshold': 'refreshAnalyzer',
-		'settings.smoothing': 'refreshAnalyzer',
+		'settings.dbThreshold'(val) {
+			if (this.analyzer) this.analyzer.maxDecibels = val
+		},
+		'settings.smoothing'(val) {
+			if (this.analyzer) this.analyzer.smoothingTimeConstant = val
+		},
 
     },
     created() {
@@ -172,11 +176,6 @@ export default {
             bufferSource.connect(audioCtx.destination)
             return bufferSource
         },
-		refreshAnalyzer() {
-			if (!this.source) return
-			this.source.disconnect(this.analyzer)
-			this.source.connect(this.createAnalyzer(this.settings))
-		},
         createAnalyzer({dbThreshold = 0, smoothing = 0.4} = {}) {
             const analyser = this.ctx.createAnalyser();
             analyser.fftSize = 128
