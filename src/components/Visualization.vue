@@ -68,12 +68,24 @@ export default {
 			this.sketch.getOffscreenCanvases()
 		},
     },
-    mounted() {
+	created() {
+		window.addEventListener('wheel', this.onMouseWheel)
+	},
+	mounted() {
 		if (window.sketch) window.sketch.destroy()
     	this.createSketch()
 		if (this.analyzer) this.sketch.start()
     },
+	deactivated() {
+		window.removeEventListener('wheel', this.onMouseWheel)
+	},
 	methods: {
+		onMouseWheel(e) {
+			this.wheeling = true
+			t += e.deltaY
+			clearTimeout(this.scrollTimeout)
+			this.scrollTimeout = setTimeout(() => this.wheeling = false, 100)
+		},
 		parameterToDecimal(name) {
 			const { min = 0, max = 100 } = this.settings[name]
 			return round(invlerp(min, max, this[name]), 3)
@@ -142,7 +154,7 @@ export default {
 					const stepSize = Math.floor(freqData.length / $this.recursion)
 
 					// shift values
-					t = Math.round(t + this.velocity * ($this.globalSpeed / 100))
+					if (!$this.wheeling) t = Math.round(t + this.velocity * ($this.globalSpeed / 100))
 					this.lowFreqIntensity = this.getLowFreqIntensity(freqData)
 					this.hueShift = Math.round((this.hueShift + $this.hueShiftSpeed / 10 ) * 100) / 100
 					if (this.hueShift > 360) this.hueShift = 0
