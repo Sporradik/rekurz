@@ -56,7 +56,7 @@ const settings = {
 		thickness: { default: 2, }
 	},
 	movement: {
-		globalSpeed: {default: 50},
+		globalSpeed: { min: -100, default: 50},
 	},
 	color: {
 		hue: {min: 0, max: 360, default: 300},

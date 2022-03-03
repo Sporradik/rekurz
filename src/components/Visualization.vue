@@ -30,9 +30,6 @@ export default {
 		settings: { type: Object, required: true },
     },
 	computed: {
-		decimalGlobalSpeed() {
-			return this.parameterToDecimal('globalSpeed')
-		},
 		decimalLowFreqDampening() {
 			return this.parameterToDecimal('lowFreqDampening')
 		},
@@ -145,7 +142,7 @@ export default {
 					const stepSize = Math.floor(freqData.length / $this.recursion)
 
 					// shift values
-					t = Math.round(t + this.velocity * ($this.decimalGlobalSpeed * 2))
+					t = Math.round(t + this.velocity * ($this.globalSpeed / 100))
 					this.lowFreqIntensity = this.getLowFreqIntensity(freqData)
 					this.hueShift = Math.round((this.hueShift + $this.hueShiftSpeed / 10 ) * 100) / 100
 					if (this.hueShift > 360) this.hueShift = 0
