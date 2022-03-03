@@ -10,7 +10,7 @@ export function round(number, decimals = 0) {
 
 export const lerp = (x, y, a) => x * (1 - a) + y * a
 
-const clamp = (a, min = 0, max = 1) => Math.min(max, Math.max(min, a))
+export const clamp = (a, min = 0, max = 1) => Math.min(max, Math.max(min, a))
 
 export const invlerp = (x, y, a) => clamp((a - x) / (y - x))
 
