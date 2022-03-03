@@ -85,13 +85,12 @@ export default {
 </script>
 
 
-
 <style scoped>
-	.slider { --knob-width: 20px; --neg-margin-y: -8px; --half-knob-width: calc(var(--knob-width) / 2); padding: 4px 0; display: flex; align-items: stretch; }
-		.slider-control-wrapper { padding: 0 var(--half-knob-width); margin: var(--neg-margin-y) calc(var(--knob-width) * -1) var(--neg-margin-y) calc(var(--half-knob-width) * -1); display: flex; align-items: stretch; flex-grow: 1; }
-			.slider-control { min-height: 20px; padding: 8px 0; position: relative; display: flex; align-items: center; flex-grow: 1; }
-				.track { --color: rgba(255, 255, 255, 0.5); margin: 0 calc(var(--half-knob-width) * -1); flex-grow: 1; border-top: 2px var(--color) solid; }
+	.slider { --knob-width: 20px; --neg-margin-y: -8px; --half-knob-width: calc(var(--knob-width) / 2); --neg-half-knob-width: calc(var(--half-knob-width) * -1); padding: 4px 0; display: flex; align-items: stretch; }
+		.slider-control-wrapper { padding: 0 var(--half-knob-width); display: flex; align-items: stretch; flex-grow: 1; }
+			.slider-control { min-height: 20px; padding: 20px 0; position: relative; display: flex; align-items: center; flex-grow: 1; }
+				.track { --color: rgba(255, 255, 255, 0.5); margin: 0 var(--neg-half-knob-width); flex-grow: 1; border-top: 2px var(--color) solid; }
 					.light .track  { --color: rgba(0,0,0, 0.5) }
-				.knob { width: var(--knob-width); margin: var(--neg-margin-y); position: absolute; top: 0; bottom: 0; background-color: lightgray; border-radius: var(--border-radius); }
+				.knob { width: var(--knob-width); position: absolute; top: 0; bottom: 0; background-color: lightgray; border-radius: var(--border-radius); }
 			.value { width: 5ch; text-align: right; }
 </style>
