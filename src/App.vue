@@ -70,15 +70,15 @@ const settings = {
 		lowFreqSensitivity: {default: 50},
 		lowFreqThreshold: {default: 50, unit: 'db'},
 		smoothing: {min: 0, max: 1, default: 0.4},
-		dbThreshold: {default: 0 }
+		dbThreshold: { min: -50, max: 0, default: 0 }
 	},
 
 }
 const allSettings = Object.assign.apply(null, [{}, ...Object.values(settings)])
 
 const vessel = require('./assets/MEDI120D-003-Glume_and_Phossa-Vessel.wav')
-const tension = require('./assets/Yoofee - 0815 Tension (Grey Master).wav')
-const frenchless = require('./assets/IFS028 A - Frenchless - 3C 273 - Ten Eight Seven Mastered.wav')
+// const tension = require('./assets/Yoofee - 0815 Tension (Grey Master).wav')
+// const frenchless = require('./assets/IFS028 A - Frenchless - 3C 273 - Ten Eight Seven Mastered.wav')
 
 export default {
     name: 'App',
@@ -112,7 +112,10 @@ export default {
 		settings: {
 			handler: 'saveSettings',
 			deep: true,
-		}
+		},
+		'settings.dbThreshold': 'refreshAnalyzer',
+		'settings.smoothing': 'refreshAnalyzer',
+
     },
     created() {
 		window.addEventListener('mousemove', this.onMousemove)
@@ -136,11 +139,11 @@ export default {
             fileReader.readAsArrayBuffer(blob)
         },
         mic() {
-            const audioCtx = new AudioContext()
+            this.ctx = new AudioContext()
             navigator.getUserMedia({audio:true},
                 stream => {
-                    const source = audioCtx.createMediaStreamSource(stream)
-                    source.connect(this.createAnalyzer(audioCtx, {maxDb:  -20}))
+                    this.source = this.ctx.createMediaStreamSource(stream)
+                    this.source.connect(this.createAnalyzer(this.settings))
                 }, () => alert('Error capturing audio.')
             )
         },
@@ -148,19 +151,19 @@ export default {
             if (this.playing && !force) return
             this.playing = true
             if (!this.file) return
-            const audioCtx = new AudioContext()
-            audioCtx.decodeAudioData(this.file, async (audioBuffer) => {
+            this.ctx = new AudioContext()
+            this.ctx.decodeAudioData(this.file, async (audioBuffer) => {
                 // Do something with audioBuffer
-                if (audioCtx.status !== 'running') {
+                if (this.ctx.status !== 'running') {
                     try {
-                        await audioCtx.resume()
+                        await this.ctx.resume()
                     } catch (e) {
                         console.error(e)
                     }
                 }
-                const source = this.createBufferSource(audioCtx, audioBuffer)
-                source.connect(this.createAnalyzer(audioCtx))
-                source.start()
+               	this.source = this.createBufferSource(this.ctx, audioBuffer)
+                this.source.connect(this.createAnalyzer())
+                this.source.start()
             })
         },
         createBufferSource(audioCtx, audioBuffer) {
@@ -169,11 +172,16 @@ export default {
             bufferSource.connect(audioCtx.destination)
             return bufferSource
         },
-        createAnalyzer(audioCtx, {maxDb = 0} = {}) {
-            const analyser = audioCtx.createAnalyser();
+		refreshAnalyzer() {
+			if (!this.source) return
+			this.source.disconnect(this.analyzer)
+			this.source.connect(this.createAnalyzer(this.settings))
+		},
+        createAnalyzer({dbThreshold = 0, smoothing = 0.4} = {}) {
+            const analyser = this.ctx.createAnalyser();
             analyser.fftSize = 128
-            analyser.smoothingTimeConstant = 0.4
-            analyser.maxDecibels = maxDb
+            analyser.smoothingTimeConstant = smoothing
+            analyser.maxDecibels = dbThreshold
             return this.analyzer = analyser
         },
 		getStoredSettings() {

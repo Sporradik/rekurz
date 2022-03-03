@@ -74,7 +74,6 @@ export default {
 		decimalToModelValue() {
 			return round(this.decimalValue * this.range + this.min, this.roundToDecimals)
 		},
-
 		constrainModelValue(value) {
 			return Math.min(Math.max(value, this.min), this.max)
 		},
