@@ -66,11 +66,11 @@ const settings = {
 		highFreqOpacityReduction: {default: 0.02},
 		lowFreqDampening: {default: 50},
 	},
-	calibration: {
+	analyzer: {
 		lowFreqSensitivity: {default: 50},
 		lowFreqThreshold: {default: 50, unit: 'db'},
-		smoothing: {min: 0, max: 1, default: 0.4},
-		dbThreshold: { min: -50, max: 0, default: 0 }
+		smoothing: {min: 0, max: 1, default: 0.4, round: 1},
+		dbThreshold: { min: -50, max: 0, default: -20 }
 	},
 
 }

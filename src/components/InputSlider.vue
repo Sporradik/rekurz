@@ -21,6 +21,7 @@ export default {
 	knobWidthPx: 20,
 	props: {
 		modelValue: { type: Number, default: 100 },
+		round: { type: Number, default: null },
 		min: { type: Number, default: 0 },
 		max: { type: Number, default: 100 }
 	},
@@ -38,6 +39,7 @@ export default {
 			return this.max - this.min
 		},
 		roundToDecimals() {
+			if (this.round !== null) return this.round
 			return this.range <= 1 ? 2 : 0
 		}
 	},

@@ -6,7 +6,7 @@
 			<div v-for="(control, n) in controls" :key="n" class="control" :class="{row: control.type === 'select', overlay: !control.type }">
 				<label>{{ camelCaseToReadable(n) }}</label>
 				<input-select v-if="control.type === 'select'" v-model="modelValue[n]" :options="control.options" />
-				<input-slider v-else v-model="modelValue[n]" :min="control.min" :max="control.max" />
+				<input-slider v-else v-model="modelValue[n]" v-bind="control" />
 			</div>
 		</div>
 		<div class="buttons">
