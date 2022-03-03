@@ -3,7 +3,7 @@
 		<div class="slider-control-wrapper" @mousedown="onMousedownKnob">
 			<div ref="sliderControl" class="slider-control">
 				<div class="track">
-					<div class="knob" :style="{left: `calc(${valuePercent}% - ${$options.knobWidthPx / 2}px` }"></div>
+					<div class="knob" :style="{left: `calc(${percentValue}% - ${$options.knobWidthPx / 2}px` }"></div>
 				</div>
 			</div>
 		</div>
@@ -14,7 +14,7 @@
 
 
 <script>
-import {invlerp, round} from '@/utils'
+import {clamp, invlerp, round} from '@/utils'
 
 export default {
 	name: 'InputSlider',
@@ -31,8 +31,12 @@ export default {
 		}
 	},
 	computed: {
-		valuePercent() {
+		percentValue() {
 			return round(this.decimalValue * 100)
+		},
+		roundToDecimals() {
+			const range = this.max - this.min
+			return range <= 1 ? 2 : 0
 		}
 	},
 	watch: {
@@ -45,7 +49,7 @@ export default {
 	},
 	methods: {
 		onSliderMousedown(e) {
-			this.decimalValue = this.getRelativeMousePosition(e)
+			this.decimalValue = this.roundToDecimals(this.getRelativeMousePosition(e))
 		},
 		onMousedownKnob() {
 			window.addEventListener('mouseup', this.onMouseup, { once: true })
@@ -60,19 +64,15 @@ export default {
 		},
 		getRelativeMousePosition(e) {
 			const {left, width} = this.$refs.sliderControl.getBoundingClientRect()
-			return this.constrainDecimal(round((e.pageX - left) / width, 5))
+			return clamp(round((e.pageX - left) / width, 5))
 		},
 		modelValueToDecimal() {
 			return round(invlerp(this.min, this.max, this.modelValue), 3)
 		},
 		decimalToModelValue() {
-			const range = this.max - this.min
-			const decimals = range <= 1 ? 2 : 0
-			return round(this.decimalValue * range + this.min, decimals)
+			return round(this.decimalValue * range + this.min, this.roundToDecimals)
 		},
-		constrainDecimal(value) {
-			return Math.min(Math.max(value, 0), 1)
-		},
+
 		constrainModelValue(value) {
 			return Math.min(Math.max(value, this.min), this.max)
 		},
@@ -92,5 +92,6 @@ export default {
 				.track { --color: rgba(255, 255, 255, 0.5); margin: 0 var(--neg-half-knob-width); flex-grow: 1; border-top: 2px var(--color) solid; }
 					.light .track  { --color: rgba(0,0,0, 0.5) }
 				.knob { width: var(--knob-width); position: absolute; top: 0; bottom: 0; background-color: lightgray; border-radius: var(--border-radius); }
+					.knob:before { width: 2px; position: absolute; top: 0; left: 50%; bottom: 0; background-color: gray; opacity: 0.3; transform: translateX(-50%); content: ''; }
 			.value { width: 5ch; text-align: right; }
 </style>
