@@ -32,11 +32,13 @@ export default {
 	},
 	computed: {
 		percentValue() {
-			return round(this.decimalValue * 100)
+			return round(this.modelValueToDecimal() * 100)
+		},
+		range() {
+			return this.max - this.min
 		},
 		roundToDecimals() {
-			const range = this.max - this.min
-			return range <= 1 ? 2 : 0
+			return this.range <= 1 ? 2 : 0
 		}
 	},
 	watch: {
@@ -49,7 +51,7 @@ export default {
 	},
 	methods: {
 		onSliderMousedown(e) {
-			this.decimalValue = this.roundToDecimals(this.getRelativeMousePosition(e))
+			this.decimalValue = this.getRelativeMousePosition(e)
 		},
 		onMousedownKnob() {
 			window.addEventListener('mouseup', this.onMouseup, { once: true })
@@ -70,7 +72,7 @@ export default {
 			return round(invlerp(this.min, this.max, this.modelValue), 3)
 		},
 		decimalToModelValue() {
-			return round(this.decimalValue * range + this.min, this.roundToDecimals)
+			return round(this.decimalValue * this.range + this.min, this.roundToDecimals)
 		},
 
 		constrainModelValue(value) {
