@@ -1,24 +1,30 @@
 <template>
-	<div class="container" :class="{light: lightMode, 'show-cursor': mouseMovedRecently} " @dblclick="controlsActive = !controlsActive">
+	<div class="container" :class="{light: settings.lightMode, 'show-cursor': mouseMovedRecently} " >
 		<transition name="fade">
 			<visualization v-if="analyzer" :analyzer="analyzer" v-bind="settings" :settings="$options.allSettings" />
 			<div v-else class="prompt">
-				<h2>rekurz.</h2>
+				<h2>
+					<div class="accent">rekurz.</div>
+					<div class="accent">rekurz.</div>
+					<div class="accent">rekurz.</div>
+					<div class="accent">rekurz.</div>
+					<div class="main">rekurz.</div>
+				</h2>
 				<div class="actions">
-					<div @click="mic"><span>[ space ]</span> <span>start rekurz.</span></div>
-					<div @click="controlsActive = !controlsActive"><span>(( dblclick ))</span> <span>toggle settings</span></div>
+					<div @click="mic"><span>[ space ]</span> <span>start</span></div>
+					<div @click="uiState.settingsActive = !uiState.settingsActive"><span>[ s ]</span> <span>settings</span></div>
+					<div @click="uiState.presetsActive = !uiState.presetsActive"><span>[ p ]</span> <span>presets</span></div>
 				</div>
 			</div>
 		</transition>
 		<controls
-			v-if="controlsActive"
+			v-if="uiState.settingsActive"
 			v-model="settings"
-			v-model:light-mode="lightMode"
 			:settings="$options.settings"
 			@click.native.stop
-			@dblclick.native.stop
 			@reset="resetSettings"
 		/>
+		<presets v-if="uiState.presetsActive" />
 		<div class="bg"></div>
 	</div>
 </template>
@@ -26,6 +32,7 @@
 <script>
 import Visualization from './components/Visualization.vue'
 import Controls from './components/Controls'
+import Presets from '@/components/Presets'
 
 // {"hue":360,"hueShiftSpeed":0,"recursion":8,"lightness":53,"globalSpeed":3,"minHighFreqOpacity":0.06,"highFreqOpacityReduction":6,"lowFreqDampening":72,"scale":28,"thickness":0,"lowFreqSensitivity":66,"lowFreqThreshold":29,"smoothing":0.84,"dbThreshold":0}
 // {"hue":330,"hueShiftSpeed":0,"lightness":56,"minHighFreqOpacity":0.01,"highFreqOpacityReduction":94,"lowFreqDampening":50,"globalSpeed":100,"mode":"mirror","formula":["tan","sin"],"recursion":10,"scale":6,"thickness":0,"lowFreqSensitivity":100,"lowFreqThreshold":50,"smoothing":0.4,"dbThreshold":0}
@@ -72,6 +79,9 @@ const settings = {
 		smoothing: {min: 0, max: 1, default: 0.4, round: 1},
 		dbThreshold: { min: -50, max: 0, default: -20 }
 	},
+	noRender: {
+		lightMode :  { default: false }
+	}
 
 }
 const allSettings = Object.assign.apply(null, [{}, ...Object.values(settings)])
@@ -83,6 +93,7 @@ const vessel = require('./assets/MEDI120D-003-Glume_and_Phossa-Vessel.wav')
 export default {
     name: 'App',
     components: {
+		Presets,
         Visualization,
         Controls
     },
@@ -94,20 +105,20 @@ export default {
             analyzer: null,
             file: null,
             loaded: false,
-			controlsActive: !!this.getStored('controlsActive'),
-			lightMode: !!this.getStored('lightMode'),
 			mouseMovedRecently: false,
+			uiState: localStorage.getObject('uiState') || {
+				settingsActive: false,
+				presetsActive: false,
+			}
         }
     },
     watch: {
         file(file) {
             if (file && this.playing) this.play(true)
         },
-		controlsActive(active) {
-			this.setStored('controlsActive', active)
-		},
-		lightMode(active) {
-			this.setStored('lightMode', active)
+		uiState: {
+			handler: 'saveUiState',
+			deep: true
 		},
 		settings: {
 			handler: 'saveSettings',
@@ -126,6 +137,8 @@ export default {
         window.addEventListener('keyup', (e) => {
             if (e.code === 'Enter') this.play()
             if (e.code === 'Space') this.mic()
+			if (e.code === 'KeyS') this.uiState.settingsActive = !this.uiState.settingsActive
+			if (e.code === 'KeyP') this.uiState.presetsActive = !this.uiState.presetsActive
         })
 		window.addEventListener('storage', e => {
 			if (e.key === 'settings') this.settings = JSON.parse(e.newValue)
@@ -197,6 +210,9 @@ export default {
 			localStorage.removeItem('settings')
 			this.settings = this.getStoredSettings()
 		},
+		saveUiState(uiState) {
+			localStorage.setObject('uiState', uiState)
+		},
 		saveSettings(settings) {
 			if (document.hasFocus()) localStorage.setObject('settings', settings)
 		},
@@ -225,6 +241,8 @@ html, body, #app, .container {
 
 * { box-sizing: border-box; }
 
+.panel { min-width: var(--panel-min-width); padding: 20px; position: absolute; z-index: 10; display: inline-block; user-select: none; background-color: var(--overlay-color); cursor: auto; }
+
 input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; border: none; color: var(--text-color); text-align: right; font-size: inherit; }
 	input:focus-visible { outline: none; }
 	input::-webkit-outer-spin-button,
@@ -245,13 +263,21 @@ input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; b
 </style>
 
 <style scoped>
-.container { --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.6); --gray-overlay-color: rgba(255,255,255, 0.1);  --gray-overlay-color-hover: rgba(255,255,255, 0.2); color: var(--text-color); --border-radius: 5px; cursor: none; }
+.container { --panel-min-width: 350px; --text-color: #fff; --bg-color: #000; --overlay-color: rgba(0,0,0, 0.6); --gray-overlay-color: rgba(255,255,255, 0.1);  --gray-overlay-color-hover: rgba(255,255,255, 0.2); color: var(--text-color); --border-radius: 5px; cursor: none; }
 	.container.show-cursor { cursor: auto; }
 	.container.light { --text-color: #000; --bg-color: #fff; --overlay-color: rgba(255,255,255, 0.4); --gray-overlay-color: rgba(0,0,0, 0.15); --gray-overlay-color-hover: rgba(0,0,0, 0.2); }
 .prompt { position: fixed; z-index: 0; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; font-size: calc(12px + 1vw); user-select: none; }
-	.prompt h2 { font-size: calc(20px + 2.5vw); }
+	.prompt h2 { position: relative; font-size: calc(20px + 2.5vw); }
+		.prompt h2 .accent { position: absolute; z-index: -1; }
+			.prompt h2 .accent:first-child { color: blue; transform: translateX(0.05vw) rotate(1.5deg); }
+			.prompt h2 .accent:nth-child(2) { color: red; transform: translateY(0.05vw) rotate(-1deg); }
+			.prompt h2 .accent:nth-child(3) { color: lime; transform: translateY(-0.05vw) scale(1.02); }
+			.prompt h2 .accent:nth-child(4) { color: yellow; transform: translateX(0.05vw) scale(0.98); }
+
+
+
 	.actions { display: flex; flex-direction: column; gap: 20px; }
-	.actions > div { display: inline-flex; justify-content: space-around; gap: calc(20px + 1vw); cursor: pointer; opacity: 0.8; transition: opacity 0.2s ease; }
+	.actions > div { display: inline-flex; justify-content: space-between; gap: calc(20px + 1vw); cursor: pointer; opacity: 0.4; transition: opacity 0.2s ease; }
 		.actions > div:hover { opacity: 1; }
 .bg { position: fixed; inset: 0; background-color: var(--bg-color); z-index: -10; }
 </style>

@@ -82,7 +82,7 @@ export default {
 	methods: {
 		onMouseWheel(e) {
 			this.wheeling = true
-			t += e.deltaY
+			t += e.deltaY * 5
 			clearTimeout(this.scrollTimeout)
 			this.scrollTimeout = setTimeout(() => this.wheeling = false, 100)
 		},

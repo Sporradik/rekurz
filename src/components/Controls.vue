@@ -1,7 +1,7 @@
 <template>
-	<div class="controls">
+	<div class="panel">
 		<h2>Settings</h2>
-		<div v-for="(controls, name) in settings" :key="name" class="section">
+		<div v-for="(controls, name) in filteredSettings" :key="name" class="section">
 			<h3>{{ camelCaseToReadable(name) }}</h3>
 			<div v-for="(control, n) in controls" :key="n" class="control" :class="{row: control.type === 'select', overlay: !control.type }">
 				<label>{{ camelCaseToReadable(n) }}</label>
@@ -11,7 +11,7 @@
 		</div>
 		<div class="buttons">
 			<div class="button" @click="$emit('reset')">Reset All</div>
-			<div class="button" @click="toggleLightMode">{{ lightMode ? 'Dark' : 'Light' }}</div>
+			<div class="button" @click="toggleLightMode">{{ modelValue.lightMode ? 'Dark' : 'Light' }}</div>
 		</div>
 	</div>
 </template>
@@ -28,12 +28,20 @@ export default {
     props: {
 		modelValue: { type: Object, required: true },
         settings: { type: Object, required: true },
-		lightMode: { type: Boolean, default: false }
     },
-	emits: ['update:lightMode', 'update:modelValue' ],
+	computed: {
+		filteredSettings() {
+			const filtered = {}
+			Object.entries(this.settings).forEach(([key, value]) => {
+				if (key !== 'noRender') filtered[key] = value
+			})
+			return filtered
+		},
+	},
+	emits: ['update:modelValue' ],
 	methods: {
 		toggleLightMode() {
-			this.$emit('update:lightMode',!this.lightMode)
+			this.modelValue.lightMode = !this.modelValue.lightMode
 		},
 		camelCaseToReadable
 	}
@@ -43,7 +51,7 @@ export default {
 
 
 <style scoped>
- .controls { min-width: 350px; padding: 20px; position: absolute; z-index: 10; display: inline-block; user-select: none; background-color: var(--overlay-color); cursor: auto; }
+ .panel { }
  	h2, h3 { margin-top: 0; }
  	.section { margin-bottom: 20px; }
 		.control { padding: 6px 0; }
