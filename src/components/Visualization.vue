@@ -6,8 +6,9 @@
 <script>
 import Sketch from 'sketch-js'
 import {getRandomInt, round, lerp, invlerp} from '@/utils'
+import presetCollection from '@/collections/presetCollection'
 
-let t = getRandomInt(100000000)
+export let t = getRandomInt(100000000)
 
 export default {
     name: 'Visualization',
@@ -47,9 +48,15 @@ export default {
 		},
 		double() {
 			return ['mirror', 'spiral'].includes(this.mode)
+		},
+		activePreset() {
+			return presetCollection.activePreset.value
 		}
 	},
     watch: {
+		activePreset(activePreset) {
+			t = activePreset.t
+		},
         analyzer: {
 			handler(val) {
             	if (val && this.sketch) {
@@ -268,9 +275,6 @@ export default {
 					if (reverse) progress = 1 - progress
 					const deg = progress * 360
 					return (deg * Math.PI) / 180
-				},
-				getFormula() {
-
 				},
 				getEndPointXY(hand) {
 					// sin + cos -> clock

@@ -12,8 +12,8 @@
 				</h2>
 				<div class="actions">
 					<div @click="mic"><span>[ space ]</span> <span>start</span></div>
-					<div @click="uiState.settingsActive = !uiState.settingsActive"><span>[ s ]</span> <span>settings</span></div>
-					<div @click="uiState.presetsActive = !uiState.presetsActive"><span>[ p ]</span> <span>presets</span></div>
+					<div @click="uiState.settingsActive = !uiState.settingsActive"><span>[ a ]</span> <span>settings</span></div>
+					<div @click="uiState.presetsActive = !uiState.presetsActive"><span>[ d ]</span> <span>presets</span></div>
 				</div>
 			</div>
 		</transition>
@@ -24,7 +24,7 @@
 			@click.native.stop
 			@reset="resetSettings"
 		/>
-		<presets v-if="uiState.presetsActive" />
+		<presets v-if="uiState.presetsActive" :presets="presets" :settings="settings" />
 		<div class="bg"></div>
 	</div>
 </template>
@@ -33,6 +33,7 @@
 import Visualization from './components/Visualization.vue'
 import Controls from './components/Controls'
 import Presets from '@/components/Presets'
+import Preset from '@/models/Preset'
 
 // {"hue":360,"hueShiftSpeed":0,"recursion":8,"lightness":53,"globalSpeed":3,"minHighFreqOpacity":0.06,"highFreqOpacityReduction":6,"lowFreqDampening":72,"scale":28,"thickness":0,"lowFreqSensitivity":66,"lowFreqThreshold":29,"smoothing":0.84,"dbThreshold":0}
 // {"hue":330,"hueShiftSpeed":0,"lightness":56,"minHighFreqOpacity":0.01,"highFreqOpacityReduction":94,"lowFreqDampening":50,"globalSpeed":100,"mode":"mirror","formula":["tan","sin"],"recursion":10,"scale":6,"thickness":0,"lowFreqSensitivity":100,"lowFreqThreshold":50,"smoothing":0.4,"dbThreshold":0}
@@ -102,6 +103,7 @@ export default {
     data() {
         return {
 			settings: this.getStoredSettings(),
+			presets: this.getStoredPresets(),
             analyzer: null,
             file: null,
             loaded: false,
@@ -137,8 +139,8 @@ export default {
         window.addEventListener('keyup', (e) => {
             if (e.code === 'Enter') this.play()
             if (e.code === 'Space') this.mic()
-			if (e.code === 'KeyS') this.uiState.settingsActive = !this.uiState.settingsActive
-			if (e.code === 'KeyP') this.uiState.presetsActive = !this.uiState.presetsActive
+			if (e.code === 'KeyA') this.uiState.settingsActive = !this.uiState.settingsActive
+			if (e.code === 'KeyD') this.uiState.presetsActive = !this.uiState.presetsActive
         })
 		window.addEventListener('storage', e => {
 			if (e.key === 'settings') this.settings = JSON.parse(e.newValue)
@@ -206,6 +208,16 @@ export default {
 				return flatSettings
 			}
 		},
+		getStoredPresets() {
+			const models = {}
+			const presets = localStorage.getObject('presets')
+			if (presets) {
+				Object.entries(presets).forEach(([id, preset]) => {
+					models[id] = new Preset(preset)
+				})
+			}
+			return models
+		},
 		resetSettings() {
 			localStorage.removeItem('settings')
 			this.settings = this.getStoredSettings()
@@ -242,6 +254,8 @@ html, body, #app, .container {
 * { box-sizing: border-box; }
 
 .panel { min-width: var(--panel-min-width); padding: 20px; position: absolute; z-index: 10; display: inline-block; user-select: none; background-color: var(--overlay-color); cursor: auto; }
+.panel h2, .panel h3 { margin-top: 0; }
+
 
 input:not([type=checkbox]) { width: auto; padding: 0; background: transparent; border: none; color: var(--text-color); text-align: right; font-size: inherit; }
 	input:focus-visible { outline: none; }

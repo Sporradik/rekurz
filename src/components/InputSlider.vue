@@ -1,6 +1,6 @@
 <template>
 	<div class="slider" :style="{'--knob-width': $options.knobWidthPx + 'px'}">
-		<div class="slider-control-wrapper" @mousedown="onMousedownKnob">
+		<div class="slider-control-wrapper" @mousedown="onSliderMousedown">
 			<div ref="sliderControl" class="slider-control">
 				<div class="track">
 					<div class="knob" :style="{left: `calc(${percentValue}% - ${$options.knobWidthPx / 2}px` }"></div>
@@ -53,11 +53,9 @@ export default {
 	},
 	methods: {
 		onSliderMousedown(e) {
-			this.decimalValue = this.getRelativeMousePosition(e)
-		},
-		onMousedownKnob() {
 			window.addEventListener('mouseup', this.onMouseup, { once: true })
 			window.addEventListener('mousemove', this.onMousemove)
+			this.decimalValue = this.getRelativeMousePosition(e)
 		},
 		onMousemove(e) {
 			if (!e.buttons) this.onMouseup()
