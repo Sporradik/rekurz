@@ -1,17 +1,17 @@
 <template>
 	<div class="panel">
 		<h2>Settings</h2>
-		<div v-for="(controls, name) in filteredSettings" :key="name" class="section">
+		<div v-for="(controls, name) in filteredSchema" :key="name" class="section">
 			<h3>{{ camelCaseToReadable(name) }}</h3>
 			<div v-for="(control, n) in controls" :key="n" class="control" :class="{row: control.type === 'select', overlay: !control.type }">
 				<label>{{ camelCaseToReadable(n) }}</label>
-				<input-select v-if="control.type === 'select'" v-model="modelValue[n]" :options="control.options" />
-				<input-slider v-else v-model="modelValue[n]" v-bind="control" />
+				<input-select v-if="control.type === 'select'" v-model="settings[n]" :options="control.options" />
+				<input-slider v-else v-model="settings[n]" v-bind="control" />
 			</div>
 		</div>
 		<div class="buttons">
-			<div class="button" @click="$emit('reset')">Reset All</div>
-			<div class="button" @click="toggleLightMode">{{ modelValue.lightMode ? 'Dark' : 'Light' }}</div>
+			<div class="button" @click="reset">Reset All</div>
+			<div class="button" @click="toggleLightMode">{{ settings.lightMode ? 'Dark' : 'Light' }}</div>
 		</div>
 	</div>
 </template>
@@ -22,28 +22,33 @@
 import InputSlider from '@/components/InputSlider'
 import InputSelect from '@/components/InputSelect'
 import {camelCaseToReadable} from '@/utils'
+import schema from '@/settings/schema'
+import settingsManager from '@/settings/settingsManager'
+
+
 export default {
 	name: 'Controls',
 	components: { InputSelect, InputSlider },
-    props: {
-		modelValue: { type: Object, required: true },
-        settings: { type: Object, required: true },
-    },
 	computed: {
-		filteredSettings() {
+		filteredSchema() {
 			const filtered = {}
-			Object.entries(this.settings).forEach(([key, value]) => {
+			Object.entries(schema).forEach(([key, value]) => {
 				if (key !== 'noRender') filtered[key] = value
 			})
 			return filtered
 		},
+		settings() {
+			return settingsManager.data.settings
+		}
 	},
-	emits: ['update:modelValue' ],
 	methods: {
 		toggleLightMode() {
 			this.modelValue.lightMode = !this.modelValue.lightMode
 		},
-		camelCaseToReadable
+		camelCaseToReadable,
+		reset() {
+			settingsManager.resetSettings()
+		}
 	}
 }
 </script>

@@ -13,14 +13,12 @@
 <script>
 import { t } from './Visualization'
 import Preset from './Preset'
-import presetCollection from '../collections/presetCollection'
+import presetCollection from '../presets/presetCollection'
+import settingsManager from '@/settings/settingsManager'
 
 export default {
 	name: 'Presets',
 	components: {Preset},
-	props: {
-		settings: { type: Object, required: true }
-	},
 	computed: {
 		presets() {
 			return presetCollection.data.presets
@@ -31,7 +29,7 @@ export default {
 	},
 	methods: {
 		create() {
-			presetCollection.create({t, settings: { ...this.settings}})
+			presetCollection.create({t, settings: { ...settingsManager.data.settings }})
 		},
 		setActivePreset(preset) {
 			presetCollection.setActive(preset)

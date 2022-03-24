@@ -6,7 +6,8 @@
 <script>
 import Sketch from 'sketch-js'
 import {getRandomInt, round, lerp, invlerp} from '@/utils'
-import presetCollection from '@/collections/presetCollection'
+import presetCollection from '@/presets/presetCollection'
+import {flatSchema} from '@/settings/schema'
 
 export let t = getRandomInt(100000000)
 
@@ -28,7 +29,6 @@ export default {
 		thickness: { type: Number, required: true },
 		mode: { type: String, default: 'mirror' },
 		formula: { type: Array, required: true },
-		settings: { type: Object, required: true },
     },
 	computed: {
 		decimalLowFreqDampening() {
@@ -94,7 +94,7 @@ export default {
 			this.scrollTimeout = setTimeout(() => this.wheeling = false, 100)
 		},
 		parameterToDecimal(name) {
-			const { min = 0, max = 100 } = this.settings[name]
+			const { min = 0, max = 100 } = flatSchema[name]
 			return round(invlerp(min, max, this[name]), 3)
 		},
 		createSketch() {

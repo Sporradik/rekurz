@@ -1,6 +1,6 @@
 import {computed, reactive, watch} from 'vue'
-import Preset from '../models/Preset'
-import PresetModel from '../models/Preset'
+import Preset from './PresetModel'
+import PresetModel from './PresetModel'
 
 export default new class PresetCollection {
 	constructor() {

@@ -19,12 +19,9 @@
 		</transition>
 		<controls
 			v-if="uiState.settingsActive"
-			v-model="settings"
-			:settings="$options.settings"
 			@click.native.stop
-			@reset="resetSettings"
 		/>
-		<presets v-if="uiState.presetsActive" :presets="presets" :settings="settings" />
+		<presets v-if="uiState.presetsActive" />
 		<div class="bg"></div>
 	</div>
 </template>
@@ -33,59 +30,10 @@
 import Visualization from './components/Visualization.vue'
 import Controls from './components/Controls'
 import Presets from '@/components/Presets'
-import Preset from '@/models/Preset'
+import settingsManager from '@/settings/settingsManager'
 
 // {"hue":360,"hueShiftSpeed":0,"recursion":8,"lightness":53,"globalSpeed":3,"minHighFreqOpacity":0.06,"highFreqOpacityReduction":6,"lowFreqDampening":72,"scale":28,"thickness":0,"lowFreqSensitivity":66,"lowFreqThreshold":29,"smoothing":0.84,"dbThreshold":0}
 // {"hue":330,"hueShiftSpeed":0,"lightness":56,"minHighFreqOpacity":0.01,"highFreqOpacityReduction":94,"lowFreqDampening":50,"globalSpeed":100,"mode":"mirror","formula":["tan","sin"],"recursion":10,"scale":6,"thickness":0,"lowFreqSensitivity":100,"lowFreqThreshold":50,"smoothing":0.4,"dbThreshold":0}
-const settings = {
-	structure: {
-		mode: {
-			type: 'select',
-			options: [
-				{ label: 'Single', value: 'single' },
-				{ label: 'Mirror', value: 'mirror' },
-				{ label: 'Spiral', value: 'spiral' },
-			],
-			default: 'mirror'
-		},
-		formula: {
-			type: 'select',
-			options: [
-				{ label: 'Clock - sin / cos', value: ['sin', 'cos']},
-				{ label: 'X beam - tan / cos', value: ['tan', 'cos']},
-				{ label: 'X beam - tan / sin', value: ['tan', 'sin']},
-				{ label: 'Y beam - sin / tan ', value: ['sin', 'tan']},
-				{ label: 'Hourglass - sin / arctan', value: ['sin', 'atan']},
-			],
-			default: ['sin', 'cos']
-		},
-		recursion: {min: 2, max: 10, default: 10,},
-		scale: { default: 50 },
-		thickness: { default: 2, }
-	},
-	movement: {
-		globalSpeed: { min: -100, default: 50},
-	},
-	color: {
-		hue: {min: 0, max: 360, default: 300},
-		hueShiftSpeed: {default: 0},
-		lightness: {default: 80,},
-		minHighFreqOpacity: { min: 0, max: 1, default: 0.01},
-		highFreqOpacityReduction: {default: 0.02},
-		lowFreqDampening: {default: 50},
-	},
-	analyzer: {
-		lowFreqSensitivity: {default: 50},
-		lowFreqThreshold: {default: 50, unit: 'db'},
-		smoothing: {min: 0, max: 1, default: 0.4, round: 1},
-		dbThreshold: { min: -50, max: 0, default: -20 }
-	},
-	noRender: {
-		lightMode :  { default: false }
-	}
-
-}
-const allSettings = Object.assign.apply(null, [{}, ...Object.values(settings)])
 
 const vessel = require('./assets/MEDI120D-003-Glume_and_Phossa-Vessel.wav')
 // const tension = require('./assets/Yoofee - 0815 Tension (Grey Master).wav')
@@ -98,12 +46,8 @@ export default {
         Visualization,
         Controls
     },
-	settings,
-	allSettings,
     data() {
         return {
-			settings: this.getStoredSettings(),
-			presets: this.getStoredPresets(),
             analyzer: null,
             file: null,
             loaded: false,
@@ -114,6 +58,11 @@ export default {
 			}
         }
     },
+	computed: {
+		settings() {
+			return settingsManager.data.settings
+		}
+	},
     watch: {
         file(file) {
             if (file && this.playing) this.play(true)
@@ -121,10 +70,6 @@ export default {
 		uiState: {
 			handler: 'saveUiState',
 			deep: true
-		},
-		settings: {
-			handler: 'saveSettings',
-			deep: true,
 		},
 		'settings.dbThreshold'(val) {
 			if (this.analyzer) this.analyzer.maxDecibels = val
@@ -198,42 +143,8 @@ export default {
             analyser.maxDecibels = dbThreshold
             return this.analyzer = analyser
         },
-		getStoredSettings() {
-			const settings = localStorage.getObject('settings')
-			if (settings) {
-				return settings
-			} else {
-				const flatSettings = Object.assign.apply(null, [{}].concat(Object.values(this.$options.settings)))
-				Object.entries(flatSettings).forEach(([key, value]) => flatSettings[key] = value.default )
-				return flatSettings
-			}
-		},
-		getStoredPresets() {
-			const models = {}
-			const presets = localStorage.getObject('presets')
-			if (presets) {
-				Object.entries(presets).forEach(([id, preset]) => {
-					models[id] = new Preset(preset)
-				})
-			}
-			return models
-		},
-		resetSettings() {
-			localStorage.removeItem('settings')
-			this.settings = this.getStoredSettings()
-		},
 		saveUiState(uiState) {
 			localStorage.setObject('uiState', uiState)
-		},
-		saveSettings(settings) {
-			if (document.hasFocus()) localStorage.setObject('settings', settings)
-		},
-		getStored(key) {
-			return localStorage.getItem(key)
-		},
-		setStored(key, value) {
-			if (value === false) localStorage.removeItem(key)
-			else localStorage.setItem(key, value)
 		},
 		onMousemove() {
 			this.mouseMovedRecently = true
