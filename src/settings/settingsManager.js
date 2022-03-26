@@ -1,5 +1,6 @@
 import {reactive, watch} from 'vue'
 import schema, { flatSchema } from './schema'
+import presetCollection from '@/presets/presetCollection'
 
 export default new class Settings {
 	constructor() {
@@ -7,6 +8,9 @@ export default new class Settings {
 			settings: this.getStoredSettings()
 		})
 		watch(this.data.settings, this.saveSettings, {deep: true})
+		watch(presetCollection.activePreset, (preset) => {
+			this.data.settings = preset.settings
+		})
 	}
 
 	getStoredSettings() {
