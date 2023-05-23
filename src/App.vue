@@ -76,7 +76,7 @@ const settings = {
 }
 const allSettings = Object.assign.apply(null, [{}, ...Object.values(settings)])
 
-const vessel = require('./assets/MEDI120D-003-Glume_and_Phossa-Vessel.wav')
+// const vessel = require('./assets/MEDI120D-003-Glume_and_Phossa-Vessel.wav')
 // const tension = require('./assets/Yoofee - 0815 Tension (Grey Master).wav')
 // const frenchless = require('./assets/IFS028 A - Frenchless - 3C 273 - Ten Eight Seven Mastered.wav')
 
@@ -135,7 +135,7 @@ export default {
     methods: {
         async load() {
             const fileReader = new FileReader()
-            const blob = await fetch(vessel).then(r => r.blob())
+            const blob = r => r.blob())
             fileReader.onloadend = () => {
                 // Convert array buffer into audio buffer
                 this.file = fileReader.result
